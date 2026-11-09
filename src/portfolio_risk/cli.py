@@ -821,7 +821,7 @@ def main(argv: list[str] | None = None) -> int:
         "--scenario",
         action="append",
         default=[],
-        help="NAME:AAPL=50,SPY=50; include every portfolio ticker, sum to 100%",
+        help="NAME:AAPL=50,SPY=50; include every portfolio ticker, sum to 100%%",
     )
     insights_cmd.add_argument(
         "--priorities",
