@@ -5,18 +5,23 @@ It is not an independent representative random sample of all listed ETFs.
 Use separate denominators for indexed, retrieved, equity-look-through eligible,
 classified, fresh and weight-complete funds. Network failures != not indexed.
 """
+
 from __future__ import annotations
 
 import csv
 import time
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
 from typing import Callable
 
 from portfolio_risk.input import normalize_symbol
-from portfolio_risk.providers.tickerinside import FundUnavailable, TickerInsideClient, TickerInsideError
+from portfolio_risk.providers.tickerinside import (
+    FundUnavailable,
+    TickerInsideClient,
+    TickerInsideError,
+)
 
 
 @dataclass(frozen=True)
@@ -81,8 +86,12 @@ def read_etf_universe(path: str | Path) -> tuple[AuditFund, ...]:
 
 
 def run_etf_audit(
-    universe: tuple[AuditFund, ...], client: TickerInsideClient, *,
-    as_of: date | None = None, refresh: bool = False, delay_ms: int = 100,
+    universe: tuple[AuditFund, ...],
+    client: TickerInsideClient,
+    *,
+    as_of: date | None = None,
+    refresh: bool = False,
+    delay_ms: int = 100,
     on_progress: Callable[[int, int, str], None] | None = None,
 ) -> tuple[list[AuditedFund], dict]:
     if not 0 <= delay_ms <= 10_000:
@@ -94,14 +103,23 @@ def run_etf_audit(
         if on_progress:
             on_progress(num, len(universe), entry.symbol)
         if entry.symbol not in fund_index:
-            results.append(AuditedFund(entry.symbol, entry.theme, entry.issuer, False, "not_indexed"))
+            results.append(
+                AuditedFund(entry.symbol, entry.theme, entry.issuer, False, "not_indexed")
+            )
             continue
         try:
             rec = client.fund(entry.symbol, refresh=refresh)
             age = (cutoff - rec.holdings_as_of).days if rec.holdings_as_of else None
             full = 95 <= rec.known_pct <= 100.00001
-            equity = rec.is_equity_holdings and bool(rec.holdings) and bool(rec.holdings_as_of) and rec.known_pct <= 100.00001
-            status = "holdings_available" if rec.holdings and rec.holdings_as_of else "no_dated_holdings"
+            equity = (
+                rec.is_equity_holdings
+                and bool(rec.holdings)
+                and bool(rec.holdings_as_of)
+                and rec.known_pct <= 100.00001
+            )
+            status = (
+                "holdings_available" if rec.holdings and rec.holdings_as_of else "no_dated_holdings"
+            )
             note = []
             if age is not None and age < 0:
                 note.append("Disclosed after audit as-of date")
@@ -112,29 +130,62 @@ def run_etf_audit(
             if not equity:
                 note.append("Not eligible for equity-only look-through without more validation")
             if rec.non_equity_positions:
-                note.append(f"{len(rec.non_equity_positions)} futures/cash positions excluded from stock holdings")
-            results.append(AuditedFund(
-                entry.symbol, entry.theme, entry.issuer, True, status,
-                positions=len(rec.holdings), weight_pct=round(rec.known_pct, 4),
-                disclosed_on=rec.holdings_as_of.isoformat() if rec.holdings_as_of else None,
-                age_days=age, source_layer=rec.source_layer, holdings_kind=rec.holdings_kind,
-                sector_count=len(rec.sector_pct), country_count=len(rec.country_pct),
-                expense_ratio_available=rec.expense_ratio_pct is not None,
-                equity_lookthrough_safe=equity and age is not None and age >= 0,
-                near_full_weight=full, current_120d=age is not None and 0 <= age <= 120,
-                note="; ".join(note), source_url=rec.source_url,
-                exposure_support=rec.exposure_support,
-                equity_validation=rec.equity_validation,
-                excluded_non_equity_positions=len(rec.non_equity_positions),
-            ))
+                note.append(
+                    f"{len(rec.non_equity_positions)} futures/cash positions excluded from stock holdings"
+                )
+            results.append(
+                AuditedFund(
+                    entry.symbol,
+                    entry.theme,
+                    entry.issuer,
+                    True,
+                    status,
+                    positions=len(rec.holdings),
+                    weight_pct=round(rec.known_pct, 4),
+                    disclosed_on=rec.holdings_as_of.isoformat() if rec.holdings_as_of else None,
+                    age_days=age,
+                    source_layer=rec.source_layer,
+                    holdings_kind=rec.holdings_kind,
+                    sector_count=len(rec.sector_pct),
+                    country_count=len(rec.country_pct),
+                    expense_ratio_available=rec.expense_ratio_pct is not None,
+                    equity_lookthrough_safe=equity and age is not None and age >= 0,
+                    near_full_weight=full,
+                    current_120d=age is not None and 0 <= age <= 120,
+                    note="; ".join(note),
+                    source_url=rec.source_url,
+                    exposure_support=rec.exposure_support,
+                    equity_validation=rec.equity_validation,
+                    excluded_non_equity_positions=len(rec.non_equity_positions),
+                )
+            )
         except FundUnavailable as exc:
-            results.append(AuditedFund(entry.symbol, entry.theme, entry.issuer, True, "index_record_missing", note=str(exc)[:180]))
+            results.append(
+                AuditedFund(
+                    entry.symbol,
+                    entry.theme,
+                    entry.issuer,
+                    True,
+                    "index_record_missing",
+                    note=str(exc)[:180],
+                )
+            )
         except (TickerInsideError, ValueError, OSError) as exc:
             message = str(exc)
-            nonstandard = any(term in message.lower() for term in
-                              ("gross", "nonstandard", "reported weights exceed", "exceed 105"))
-            results.append(AuditedFund(entry.symbol, entry.theme, entry.issuer, True,
-                             "nonstandard_weights" if nonstandard else "provider_error", note=message[:180]))
+            nonstandard = any(
+                term in message.lower()
+                for term in ("gross", "nonstandard", "reported weights exceed", "exceed 105")
+            )
+            results.append(
+                AuditedFund(
+                    entry.symbol,
+                    entry.theme,
+                    entry.issuer,
+                    True,
+                    "nonstandard_weights" if nonstandard else "provider_error",
+                    note=message[:180],
+                )
+            )
         if delay_ms:
             time.sleep(delay_ms / 1000)
     return results, meta
@@ -142,7 +193,8 @@ def run_etf_audit(
 
 def _stats(rows: list[AuditedFund]) -> dict:
     n = len(rows)
-    count = lambda pred: sum(bool(pred(x)) for x in rows)
+    def count(pred):
+        return sum(bool(pred(x)) for x in rows)
     return {
         "total": n,
         "indexed": count(lambda x: x.indexed),
@@ -156,7 +208,9 @@ def _stats(rows: list[AuditedFund]) -> dict:
         "nonstandard_weights": count(lambda x: x.status == "nonstandard_weights"),
         "partial_weight": count(lambda x: x.weight_pct is not None and x.weight_pct < 95),
         "not_indexed": count(lambda x: x.status == "not_indexed"),
-        "fund_types": dict(sorted(Counter(x.holdings_kind or "unknown" for x in rows if x.indexed).items())),
+        "fund_types": dict(
+            sorted(Counter(x.holdings_kind or "unknown" for x in rows if x.indexed).items())
+        ),
         "price_only_exposure": count(lambda x: x.exposure_support == "price_only"),
         "provider_verified_equity": count(lambda x: x.equity_validation == "issuer_evidence"),
         "mixed_non_equity_positions": count(lambda x: x.excluded_non_equity_positions > 0),

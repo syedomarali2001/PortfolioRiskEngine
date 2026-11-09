@@ -2,6 +2,7 @@
 
 Kept separate from the pure V4 simulator so it can later power a GUI or API.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from datetime import date, timedelta
 import pandas as pd
 
 from portfolio_risk.accounting import PortfolioValuation
-from portfolio_risk.backtest import BacktestError, BacktestReport, SCHEDULES, run_backtest
+from portfolio_risk.backtest import SCHEDULES, BacktestError, BacktestReport, run_backtest
 from portfolio_risk.cache import HistoryCache
 from portfolio_risk.fx import FXRateError
 from portfolio_risk.historical_fx import convert_price_history_to_base
@@ -68,15 +69,16 @@ def run_backtest_from_market_data(
     native_prices = {}
     for symbol in symbols:
         fetched = get_validated_history(provider, cache, symbol, start, end, refresh=refresh)
-        chosen_explicit = (benchmark_quote_currency if symbol == benchmark_symbol
-                           else quotes[symbol])
+        chosen_explicit = benchmark_quote_currency if symbol == benchmark_symbol else quotes[symbol]
         try:
             selected_ccy = _quote_currency(symbol, chosen_explicit, fetched.history.quote_currency)
         except ValueError as exc:
             raise BacktestError(str(exc)) from exc
         reported = (fetched.history.quote_currency or "").strip().upper()
         if reported in {"CAD", "USD"} and reported != selected_ccy:
-            warnings.append(f"{symbol}: quote currency {selected_ccy} differs from provider {reported}")
+            warnings.append(
+                f"{symbol}: quote currency {selected_ccy} differs from provider {reported}"
+            )
         native_prices[symbol] = (fetched.history.prices, selected_ccy)
         source_info[symbol] = {
             "source": fetched.history.source,
@@ -94,9 +96,7 @@ def run_backtest_from_market_data(
     fx_prices = None
     if need_fx:
         fx_start = start - timedelta(days=max(max_fx_age_days + 2, 9))
-        fetched = get_validated_history(
-            provider, cache, "USDCAD=X", fx_start, end, refresh=refresh
-        )
+        fetched = get_validated_history(provider, cache, "USDCAD=X", fx_start, end, refresh=refresh)
         fx_prices = fetched.history.prices
         source_info["USDCAD=X"] = {
             "source": fetched.history.source,
@@ -113,17 +113,23 @@ def run_backtest_from_market_data(
     for symbol, (series, currency) in native_prices.items():
         try:
             converted[symbol] = convert_price_history_to_base(
-                series, quote_currency=currency, base_currency=valuation.base_currency,
-                usd_cad_prices=fx_prices, max_fx_age_days=max_fx_age_days,
+                series,
+                quote_currency=currency,
+                base_currency=valuation.base_currency,
+                usd_cad_prices=fx_prices,
+                max_fx_age_days=max_fx_age_days,
             )
         except (ValueError, FXRateError) as exc:
             raise BacktestError(f"{symbol}: cannot convert historical prices: {exc}") from exc
 
     weights = {h.symbol: float(h.weight) for h in valuation.holdings}
     result = run_backtest(
-        {s: converted[s] for s in names}, weights,
-        initial_capital=initial_capital, base_currency=valuation.base_currency,
-        fee_bps=fee_bps, annual_risk_free_rate=annual_risk_free_rate,
+        {s: converted[s] for s in names},
+        weights,
+        initial_capital=initial_capital,
+        base_currency=valuation.base_currency,
+        fee_bps=fee_bps,
+        annual_risk_free_rate=annual_risk_free_rate,
         schedules=schedules,
         benchmark_prices_in_base=(converted.get(benchmark_symbol) if benchmark_symbol else None),
         benchmark_symbol=benchmark_symbol,

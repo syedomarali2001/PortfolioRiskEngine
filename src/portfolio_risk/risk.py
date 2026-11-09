@@ -5,6 +5,7 @@ base-currency observed common-close simple returns from a V4 strategy.
 Historical tail ES includes fractional probability mass at the cutoff.
 Forecasts use strictly preceding observations and are evaluated one step ahead.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -26,10 +27,10 @@ class RiskError(ValueError):
 class TailRisk:
     model: str
     confidence: float
-    value_at_risk: float      # positive fraction of capital at risk
+    value_at_risk: float  # positive fraction of capital at risk
     expected_shortfall: float  # positive fraction of capital at risk
-    var_amount: float         # base currency
-    es_amount: float          # base currency
+    var_amount: float  # base currency
+    es_amount: float  # base currency
 
 
 @dataclass(frozen=True)
@@ -99,7 +100,9 @@ def _valid_returns(returns: pd.Series) -> pd.Series:
     return pd.Series(arr, index=returns.index, name=returns.name, dtype=float)
 
 
-def _tail_estimates(sample: np.ndarray, confidence: float) -> tuple[tuple[float, float], tuple[float, float]]:
+def _tail_estimates(
+    sample: np.ndarray, confidence: float
+) -> tuple[tuple[float, float], tuple[float, float]]:
     """Return historical and normal-model (VaR, ES) in positive loss units."""
     if sample.ndim != 1 or len(sample) < 2 or not np.isfinite(sample).all():
         raise RiskError("Need at least two finite historical returns")
@@ -132,7 +135,7 @@ def _coverage(sample: pd.Series, lookback: int, confidence: float, model: str) -
     last_forecast = None
     tests = max(0, len(observations) - lookback)
     for i in range(lookback, len(observations)):
-        train = observations[i - lookback:i]  # NO look-ahead
+        train = observations[i - lookback : i]  # NO look-ahead
         hist, normal = _tail_estimates(train, confidence)
         forecast = hist[0] if model == "historical" else normal[0]
         if -observations[i] > forecast + 1e-12:
@@ -144,21 +147,29 @@ def _coverage(sample: pd.Series, lookback: int, confidence: float, model: str) -
     if tests:
         null_breach = 1.0 - confidence
         ll_null = exceptions * log(null_breach) + (tests - exceptions) * log(1 - null_breach)
-        ll_alt = ((exceptions * log(rate) if exceptions else 0.0) +
-                  ((tests - exceptions) * log(1 - rate) if exceptions < tests else 0.0))
+        ll_alt = (exceptions * log(rate) if exceptions else 0.0) + (
+            (tests - exceptions) * log(1 - rate) if exceptions < tests else 0.0
+        )
         lr = max(0.0, 2.0 * (ll_alt - ll_null))
         pvalue = erfc(sqrt(lr / 2.0))  # chi-square(1) asymptotic survival function
     return CoverageTest(
-        model=model, confidence=confidence, lookback=lookback,
-        tests=tests, breaches=exceptions,
-        breach_fraction=rate, expected_breaches=expected,
-        kupiec_lr=lr, kupiec_p_value=pvalue,
+        model=model,
+        confidence=confidence,
+        lookback=lookback,
+        tests=tests,
+        breaches=exceptions,
+        breach_fraction=rate,
+        expected_breaches=expected,
+        kupiec_lr=lr,
+        kupiec_p_value=pvalue,
         last_forecast_date=sample.index[-1].date().isoformat() if tests else None,
         last_var=last_forecast,
     )
 
 
-def _asset_attribution(returns: pd.DataFrame, weights: Mapping[str, float]) -> tuple[tuple[RiskAttribution, ...], float, float | None]:
+def _asset_attribution(
+    returns: pd.DataFrame, weights: Mapping[str, float]
+) -> tuple[tuple[RiskAttribution, ...], float, float | None]:
     names = list(weights)
     subset = returns[names]
     vals = subset.to_numpy(dtype=float)
@@ -177,12 +188,16 @@ def _asset_attribution(returns: pd.DataFrame, weights: Mapping[str, float]) -> t
         contributions = w * (covariance @ w) / sigma
         shares = contributions / sigma
         ratio = float(np.dot(w, standalone) / sigma)
-    result = tuple(RiskAttribution(
-        symbol=n, weight=float(w[i]),
-        standalone_volatility=float(standalone[i] * sqrt(TRADING_DAYS_PER_YEAR)),
-        contribution_to_volatility=float(contributions[i] * sqrt(TRADING_DAYS_PER_YEAR)),
-        share_of_total_risk=float(shares[i]),
-    ) for i, n in enumerate(names))
+    result = tuple(
+        RiskAttribution(
+            symbol=n,
+            weight=float(w[i]),
+            standalone_volatility=float(standalone[i] * sqrt(TRADING_DAYS_PER_YEAR)),
+            contribution_to_volatility=float(contributions[i] * sqrt(TRADING_DAYS_PER_YEAR)),
+            share_of_total_risk=float(shares[i]),
+        )
+        for i, n in enumerate(names)
+    )
     return result, sigma * sqrt(TRADING_DAYS_PER_YEAR), ratio
 
 
@@ -196,7 +211,7 @@ def analyze_risk(
     starting_capital: float = 20000.0,
     reference_capital: float | None = None,
     lookback: int = 252,
-    confidences: tuple[float, ...] = (.95, .99),
+    confidences: tuple[float, ...] = (0.95, 0.99),
     shocks: Mapping[str, float] | None = None,
 ) -> RiskReport:
     """Analyze one V4 simulation, using only information within the sample.
@@ -239,6 +254,7 @@ def analyze_risk(
     # Shared price dates are inherited from V4. Restrict to the exact V4 dates
     # so independently cleaned/converted sources cannot introduce misalignment.
     from portfolio_risk.historical_fx import _validated_series
+
     named = {k: _validated_series(v, k) for k, v in asset_prices_in_base.items()}
     prices = pd.concat(named, axis=1, join="inner").sort_index()
     asset_returns = prices.pct_change(fill_method=None).iloc[1:]
@@ -257,37 +273,52 @@ def analyze_risk(
     for confidence in confidences:
         hist, normal = _tail_estimates(recent.to_numpy(), confidence)
         for model, (var, es) in (("historical", hist), ("parametric_normal", normal)):
-            estimates.append(TailRisk(
-                model, confidence, var, es,
-                var * reference_capital, es * reference_capital,
-            ))
+            estimates.append(
+                TailRisk(
+                    model,
+                    confidence,
+                    var,
+                    es,
+                    var * reference_capital,
+                    es * reference_capital,
+                )
+            )
             coverage.append(_coverage(series, lookback, confidence, model))
     attribution, volatility, diversification = _asset_attribution(asset_recent, weights)
     stresses = []
     worst_one = float(series.min())
-    stresses.append(StressResult(
-        label="Worst observed common-date return", source="observed_strategy",
-        portfolio_return=worst_one,
-        change_on_capital=worst_one * reference_capital,
-        description=f"Worst interval among {len(series)} observed V4 strategy return periods",
-    ))
+    stresses.append(
+        StressResult(
+            label="Worst observed common-date return",
+            source="observed_strategy",
+            portfolio_return=worst_one,
+            change_on_capital=worst_one * reference_capital,
+            description=f"Worst interval among {len(series)} observed V4 strategy return periods",
+        )
+    )
     if len(series) >= 20:
         rolling = (1.0 + series).rolling(20).apply(np.prod, raw=True) - 1.0
         worst_twenty = float(rolling.min())
-        stresses.append(StressResult(
-            label="Worst observed 20-period compounded return", source="observed_strategy",
-            portfolio_return=worst_twenty,
-            change_on_capital=worst_twenty * reference_capital,
-            description="20 consecutive common-close return periods, not 20 calendar days",
-        ))
+        stresses.append(
+            StressResult(
+                label="Worst observed 20-period compounded return",
+                source="observed_strategy",
+                portfolio_return=worst_twenty,
+                change_on_capital=worst_twenty * reference_capital,
+                description="20 consecutive common-close return periods, not 20 calendar days",
+            )
+        )
     if shocks:
         shock_return = float(sum(weights[s] * shocks.get(s, 0.0) for s in weights))
-        stresses.append(StressResult(
-            label="User-defined instantaneous asset shocks", source="hypothetical",
-            portfolio_return=shock_return,
-            change_on_capital=shock_return * reference_capital,
-            description="Single-period shocks on ending weights; unspecified assets unchanged",
-        ))
+        stresses.append(
+            StressResult(
+                label="User-defined instantaneous asset shocks",
+                source="hypothetical",
+                portfolio_return=shock_return,
+                change_on_capital=shock_return * reference_capital,
+                description="Single-period shocks on ending weights; unspecified assets unchanged",
+            )
+        )
     warnings = [
         "Risk estimates describe distributions of historical V4 strategy returns; they are not future-loss guarantees.",
         "Asset risk attribution uses trailing covariance and FINAL simulated portfolio weights; "
@@ -298,31 +329,43 @@ def analyze_risk(
         "test frequency only (not independence), and are unreliable with few expected breaches.",
     ]
     if len(series) < lookback + 20:
-        warnings.append("SHORT_COVERAGE: fewer than 20 validation periods after lookback; do not judge calibration.")
+        warnings.append(
+            "SHORT_COVERAGE: fewer than 20 validation periods after lookback; do not judge calibration."
+        )
     if tail_n < lookback:
-        warnings.append(f"SHORT_ESTIMATION: using {tail_n} rather than {lookback} requested lookback periods")
-    if any(len(series) - lookback < 5/(1-confidence) for confidence in confidences):
-        warnings.append("SPARSE_EXCEEDANCES: one or more confidence levels have fewer than five expected breaches")
+        warnings.append(
+            f"SHORT_ESTIMATION: using {tail_n} rather than {lookback} requested lookback periods"
+        )
+    if any(len(series) - lookback < 5 / (1 - confidence) for confidence in confidences):
+        warnings.append(
+            "SPARSE_EXCEEDANCES: one or more confidence levels have fewer than five expected breaches"
+        )
     return RiskReport(
         first_date=series.index[0].date().isoformat(),
         last_date=series.index[-1].date().isoformat(),
-        base_currency=base_currency, strategy=strategy,
+        base_currency=base_currency,
+        strategy=strategy,
         starting_capital=starting_capital,
         reference_capital=reference_capital,
-        lookback=lookback, estimation_observations=tail_n,
+        lookback=lookback,
+        estimation_observations=tail_n,
         selected_strategy_returns=series,
-        risk_estimates=tuple(estimates), attribution=attribution,
+        risk_estimates=tuple(estimates),
+        attribution=attribution,
         portfolio_volatility=volatility,
         diversification_ratio=diversification,
-        coverage=tuple(coverage), stresses=tuple(stresses),
+        coverage=tuple(coverage),
+        stresses=tuple(stresses),
         warnings=tuple(warnings),
     )
 
 
 def risk_as_dict(report: RiskReport, *, include_series: bool = False) -> dict:
     data = {
-        "first_date": report.first_date, "last_date": report.last_date,
-        "base_currency": report.base_currency, "strategy": report.strategy,
+        "first_date": report.first_date,
+        "last_date": report.last_date,
+        "base_currency": report.base_currency,
+        "strategy": report.strategy,
         "starting_capital": report.starting_capital,
         "reference_capital": report.reference_capital,
         "lookback": report.lookback,

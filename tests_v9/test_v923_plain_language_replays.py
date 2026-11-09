@@ -1,4 +1,5 @@
 """V9.23: explain the same evidence without overstating retrospective gains."""
+import ast
 from pathlib import Path
 import copy
 import pytest
@@ -94,4 +95,15 @@ def test_live_view_explains_past_replays_not_predicted_future():
     assert 'Technical details: individual historical tests' in source
     assert 'benchmark_insights(goal, item)' in source
     optimizer = (ROOT/'src'/'portfolio_risk'/'v918_three_strategies.py').read_text()
-    assert "'primary_improvement': score" in optimizer
+    # Verify the dictionary value is the score variable, independent of quotes.
+    assert any(
+        isinstance(node, ast.Dict)
+        and any(
+            isinstance(key, ast.Constant)
+            and key.value == 'primary_improvement'
+            and isinstance(value, ast.Name)
+            and value.id == 'score'
+            for key, value in zip(node.keys, node.values)
+        )
+        for node in ast.walk(ast.parse(optimizer))
+    )

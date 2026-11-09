@@ -4,13 +4,18 @@ Top holdings are often incomplete, and constituent asset types are UNKNOWN. Yaho
 holdings as-of date in this API; retrieval is NOT the disclosure date. Do not
 persist or redistribute third-party snapshots without checking use terms.
 """
+
 from __future__ import annotations
 
 from datetime import date
 from math import isfinite
 
 from portfolio_risk.exposure import (
-    Constituent, ExposureError, FundSnapshot, UNKNOWN, validate_snapshots,
+    UNKNOWN,
+    Constituent,
+    ExposureError,
+    FundSnapshot,
+    validate_snapshots,
 )
 from portfolio_risk.input import normalize_symbol
 
@@ -22,10 +27,15 @@ def _top_holding_rows(frame) -> list[Constituent]:
     if not isinstance(frame, pd.DataFrame) or frame.empty:
         raise ExposureError("ETF top holdings were not available")
     cols = {str(x).strip().lower().replace("_", " "): x for x in frame.columns}
-    weight_col = next((cols[c] for c in ("holding percent", "holdingpercent", "weight", "holding %")
-                       if c in cols), None)
-    symbol_col = next((cols[c] for c in ("symbol", "ticker", "holding symbol")
-                       if c in cols), None)
+    weight_col = next(
+        (
+            cols[c]
+            for c in ("holding percent", "holdingpercent", "weight", "holding %")
+            if c in cols
+        ),
+        None,
+    )
+    symbol_col = next((cols[c] for c in ("symbol", "ticker", "holding symbol") if c in cols), None)
     if weight_col is None:
         raise ExposureError("Yahoo top holdings table has no recognized weight column")
     found = []
@@ -34,7 +44,9 @@ def _top_holding_rows(frame) -> list[Constituent]:
         try:
             symbol = normalize_symbol(str(raw_symbol))
         except ValueError as exc:
-            raise ExposureError(f"Yahoo returned an invalid holdings symbol {raw_symbol!r}") from exc
+            raise ExposureError(
+                f"Yahoo returned an invalid holdings symbol {raw_symbol!r}"
+            ) from exc
         try:
             frac = float(row[weight_col])
         except (ValueError, TypeError) as exc:
@@ -50,6 +62,7 @@ def fetch_yahoo_top_holdings(symbol: str, *, fetched_on: date | None = None) -> 
     """Best-effort snapshot; does NOT claim to be complete or disclosure-dated."""
     try:
         import yfinance as yf
+
         frame = yf.Ticker(symbol).funds_data.top_holdings
         holdings = _top_holding_rows(frame)
         snap = FundSnapshot(

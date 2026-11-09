@@ -14,7 +14,10 @@ def test_good_history_passes(price_history_factory):
     assert report.last_date == date(2026, 1, 7)
 
 
-@pytest.mark.parametrize("prices", [(1.0, 0.0, 3.0), (1.0, -2.0, 3.0), (1.0, float("nan"), 3.0), (1.0, float("inf"), 3.0)])
+@pytest.mark.parametrize(
+    "prices",
+    [(1.0, 0.0, 3.0), (1.0, -2.0, 3.0), (1.0, float("nan"), 3.0), (1.0, float("inf"), 3.0)],
+)
 def test_nonpositive_or_nonfinite_prices_rejected(price_history_factory, prices):
     with pytest.raises(PriceQualityError):
         validate_history(price_history_factory(values=prices))
@@ -39,6 +42,8 @@ def test_warn_short_and_stale_history(price_history_factory):
 
 
 def test_large_date_gap_warned(price_history_factory):
-    history = price_history_factory(dates=["2026-01-05", "2026-01-20", "2026-01-21"], end=date(2026, 1, 23))
+    history = price_history_factory(
+        dates=["2026-01-05", "2026-01-20", "2026-01-21"], end=date(2026, 1, 23)
+    )
     report = validate_history(history)
     assert any(w.startswith("LARGE_GAP:") for w in report.warnings)

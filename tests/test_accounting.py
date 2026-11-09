@@ -11,14 +11,21 @@ from portfolio_risk.models import Holding, PortfolioInput
 
 
 def make_input(*positions):
-    return PortfolioInput(tuple(Holding(symbol, Decimal(value), currency)
-                                for symbol, value, currency in positions), "fixture.csv")
+    return PortfolioInput(
+        tuple(Holding(symbol, Decimal(value), currency) for symbol, value, currency in positions),
+        "fixture.csv",
+    )
 
 
 def test_sample_exact_totals_weights_and_concentration():
-    p = make_input(("XEQT.TO", "8000", "CAD"), ("QQQ", "4000", "USD"),
-                   ("SCHD", "3000", "USD"), ("SPMO", "2000", "USD"),
-                   ("BTC-USD", "1500", "USD"), ("GLD", "1500", "USD"))
+    p = make_input(
+        ("XEQT.TO", "8000", "CAD"),
+        ("QQQ", "4000", "USD"),
+        ("SCHD", "3000", "USD"),
+        ("SPMO", "2000", "USD"),
+        ("BTC-USD", "1500", "USD"),
+        ("GLD", "1500", "USD"),
+    )
     q = manual_fx_quote("1.35", date(2026, 11, 7))
     result = value_portfolio(p, base_currency="CAD", fx_quote=q)
     assert result.total_value == Decimal("24200.00")
@@ -30,15 +37,14 @@ def test_sample_exact_totals_weights_and_concentration():
     assert result.concentration.largest_weight == result.holdings[0].weight
     assert result.concentration.top_three_weight == Decimal("17450.00") / result.total_value
     assert result.concentration.effective_holdings == 1 / result.concentration.herfindahl_index
-    assert dict(result.by_entered_currency) == {
-        "CAD": Decimal("8000"), "USD": Decimal("16200.00")
-    }
+    assert dict(result.by_entered_currency) == {"CAD": Decimal("8000"), "USD": Decimal("16200.00")}
 
 
 def test_base_usd_inverts_quote_and_uses_decimal():
     p = make_input(("XEQT.TO", "135", "CAD"), ("QQQ", "100", "USD"))
-    out = value_portfolio(p, base_currency="USD",
-                          fx_quote=manual_fx_quote("1.35", date(2026, 11, 7)))
+    out = value_portfolio(
+        p, base_currency="USD", fx_quote=manual_fx_quote("1.35", date(2026, 11, 7))
+    )
     assert out.total_value == Decimal("200")
     assert [h.weight for h in out.holdings] == [Decimal("0.5"), Decimal("0.5")]
     assert out.concentration.herfindahl_index == Decimal("0.50")

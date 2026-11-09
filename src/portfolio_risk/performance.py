@@ -108,12 +108,18 @@ def _metrics(returns: pd.Series, dates: pd.DatetimeIndex, risk_free_annual: floa
     vol = vol_per_period * sqrt(TRADING_DAYS_PER_YEAR)
     rf_per_period = (1.0 + risk_free_annual) ** (1.0 / TRADING_DAYS_PER_YEAR) - 1.0
     excess = observations - rf_per_period
-    sharpe = (float(np.mean(excess)) / vol_per_period * sqrt(TRADING_DAYS_PER_YEAR)
-              if vol_per_period > 1e-14 else None)
+    sharpe = (
+        float(np.mean(excess)) / vol_per_period * sqrt(TRADING_DAYS_PER_YEAR)
+        if vol_per_period > 1e-14
+        else None
+    )
     downside = np.minimum(excess, 0.0)
-    downside_dev = float(np.sqrt(np.mean(downside ** 2)))
-    sortino = (float(np.mean(excess)) / downside_dev * sqrt(TRADING_DAYS_PER_YEAR)
-               if downside_dev > 1e-14 else None)
+    downside_dev = float(np.sqrt(np.mean(downside**2)))
+    sortino = (
+        float(np.mean(excess)) / downside_dev * sqrt(TRADING_DAYS_PER_YEAR)
+        if downside_dev > 1e-14
+        else None
+    )
     peaks = np.maximum.accumulate(wealth)
     max_dd = float(np.min(wealth / peaks - 1.0))
     return Metrics(
@@ -196,8 +202,7 @@ def analyze_performance(
     index.iloc[1:] = 100.0 * np.cumprod(1.0 + port_rets.to_numpy())
     dates = price_frame.index
     asset_metrics = {
-        symbol: _metrics(asset_rets[symbol], dates, annual_risk_free_rate)
-        for symbol in asset_names
+        symbol: _metrics(asset_rets[symbol], dates, annual_risk_free_rate) for symbol in asset_names
     }
     correlations_frame = asset_rets.corr()
     correlations = {
@@ -216,8 +221,11 @@ def analyze_performance(
         active = port_rets - bench_returns
         active_vol = float(active.std(ddof=1))
         tracking_error = active_vol * sqrt(TRADING_DAYS_PER_YEAR)
-        information_ratio = (float(active.mean()) / active_vol * sqrt(TRADING_DAYS_PER_YEAR)
-                             if active_vol > 1e-14 else None)
+        information_ratio = (
+            float(active.mean()) / active_vol * sqrt(TRADING_DAYS_PER_YEAR)
+            if active_vol > 1e-14
+            else None
+        )
         benchmark = BenchmarkComparison(
             benchmark_symbol,
             _metrics(bench_returns, dates, annual_risk_free_rate),
@@ -227,7 +235,9 @@ def analyze_performance(
         )
     warnings = []
     if len(returns) < TRADING_DAYS_PER_YEAR:
-        warnings.append("SHORT_SAMPLE: fewer than 252 return periods; annualized ratios may be unstable")
+        warnings.append(
+            "SHORT_SAMPLE: fewer than 252 return periods; annualized ratios may be unstable"
+        )
     # User supplied current holdings weights applied retroactively. Never
     # describe this result as the person's realized account returns.
     warnings.append(

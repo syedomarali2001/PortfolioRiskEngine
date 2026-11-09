@@ -1,4 +1,5 @@
 """V9.21: original-portfolio improvement and benchmark competitiveness differ."""
+import ast
 from pathlib import Path
 
 import pytest
@@ -64,7 +65,17 @@ def test_legacy_optimized_data_paths_and_user_visible_split_are_preserved():
     assert 'show_three_results' in ui
     assert 'Did it improve your portfolio?' in ui
     assert 'How does it compare with SPY and RSP?' in ui
-    assert "'portfolio_evidence': portfolio_evidence" in backend
-    assert "'benchmark_evidence': benchmark_evidence" in backend
+    # Check Python dictionary bindings, not quote style changed by Ruff.
+    bindings = {
+        (key.value, value.id)
+        for node in ast.walk(ast.parse(backend))
+        if isinstance(node, ast.Dict)
+        for key, value in zip(node.keys, node.values)
+        if isinstance(key, ast.Constant)
+        and isinstance(key.value, str)
+        and isinstance(value, ast.Name)
+    }
+    assert ('portfolio_evidence', 'portfolio_evidence') in bindings
+    assert ('benchmark_evidence', 'benchmark_evidence') in bindings
     assert 'benchmark_evidence_status' not in ui
     assert 'not statistical significance' in ui

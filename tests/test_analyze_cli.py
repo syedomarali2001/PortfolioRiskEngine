@@ -27,13 +27,15 @@ def test_json_output_is_pure_json(capsys):
 
 def test_invalid_rate_exits_at_argparse(capsys):
     import pytest
+
     with pytest.raises(SystemExit, match="2"):
         main(["analyze", "examples/sample_portfolio.csv", "--usd-cad", "0"])
 
 
 def test_future_fx_cutoff_is_rejected(capsys):
-    code = main(["analyze", "examples/sample_portfolio.csv", "--usd-cad", "1.4",
-                 "--as-of", "2099-01-01"])
+    code = main(
+        ["analyze", "examples/sample_portfolio.csv", "--usd-cad", "1.4", "--as-of", "2099-01-01"]
+    )
     assert code == 2
     assert "future" in capsys.readouterr().err
 

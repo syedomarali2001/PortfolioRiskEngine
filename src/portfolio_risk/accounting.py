@@ -124,7 +124,9 @@ def valuation_as_dict(valuation: PortfolioValuation) -> dict:
             "effective_holdings": str(valuation.concentration.effective_holdings),
         },
         "by_entered_currency": {ccy: str(value) for ccy, value in valuation.by_entered_currency},
-        "fx_quote": None if fx is None else {
+        "fx_quote": None
+        if fx is None
+        else {
             "pair": "USD/CAD",
             "rate_cad_per_usd": str(fx.usd_cad),
             "cutoff_date": fx.as_of.isoformat(),

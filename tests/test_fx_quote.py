@@ -8,7 +8,11 @@ import pytest
 
 from portfolio_risk.cache import HistoryCache
 from portfolio_risk.fx import (
-    FXQuote, FXRateError, convert_amount, latest_usd_cad_quote, manual_fx_quote,
+    FXQuote,
+    FXRateError,
+    convert_amount,
+    latest_usd_cad_quote,
+    manual_fx_quote,
     validate_usd_cad,
 )
 from portfolio_risk.models import PriceHistory
@@ -22,12 +26,17 @@ class FakeFXProvider:
     def get_history(self, symbol, start, end):
         self.calls += 1
         assert symbol == "USDCAD=X"
-        index = pd.DatetimeIndex([pd.Timestamp(d) for d, v in self.observations
-                                  if start <= date.fromisoformat(d) < end])
-        prices = pd.Series([v for d, v in self.observations
-                            if start <= date.fromisoformat(d) < end], index=index, dtype=float)
-        return PriceHistory(symbol, prices, start, end, "Mock FX provider",
-                            datetime.now(timezone.utc), "CAD", True)
+        index = pd.DatetimeIndex(
+            [pd.Timestamp(d) for d, v in self.observations if start <= date.fromisoformat(d) < end]
+        )
+        prices = pd.Series(
+            [v for d, v in self.observations if start <= date.fromisoformat(d) < end],
+            index=index,
+            dtype=float,
+        )
+        return PriceHistory(
+            symbol, prices, start, end, "Mock FX provider", datetime.now(timezone.utc), "CAD", True
+        )
 
 
 def test_asof_weekend_uses_friday_not_monday(tmp_path):

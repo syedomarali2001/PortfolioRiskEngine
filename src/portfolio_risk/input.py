@@ -55,7 +55,9 @@ def parse_portfolio(path: str | Path) -> PortfolioInput:
             holdings: list[Holding] = []
             seen: set[str] = set()
             for row_num, row in enumerate(reader, start=2):
-                if not any((value or "").strip() for value in row.values() if isinstance(value, str)):
+                if not any(
+                    (value or "").strip() for value in row.values() if isinstance(value, str)
+                ):
                     continue
                 if None in row or any(value is None for value in row.values()):
                     raise PortfolioFormatError(f"Row {row_num}: incorrect number of columns")
@@ -86,8 +88,14 @@ def parse_portfolio(path: str | Path) -> PortfolioInput:
                     raise PortfolioFormatError(
                         f"Row {row_num}: quote_currency must be CAD, USD or blank"
                     )
-                holdings.append(Holding(symbol=symbol, market_value=value, currency=currency,
-                                        quote_currency=raw_quote or None))
+                holdings.append(
+                    Holding(
+                        symbol=symbol,
+                        market_value=value,
+                        currency=currency,
+                        quote_currency=raw_quote or None,
+                    )
+                )
     except (OSError, UnicodeError, csv.Error) as exc:
         raise PortfolioFormatError(f"Unable to read portfolio file: {exc}") from exc
 

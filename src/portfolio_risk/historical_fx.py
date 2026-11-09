@@ -64,7 +64,9 @@ def convert_price_history_to_base(
     if (age_days > max_fx_age_days).any():
         stale_idx = int(np.argmax(age_days > max_fx_age_days))
         day = asset.index[stale_idx].date()
-        raise FXRateError(f"Historical FX quote too old for asset date {day}: {age_days[stale_idx]} days")
+        raise FXRateError(
+            f"Historical FX quote too old for asset date {day}: {age_days[stale_idx]} days"
+        )
     aligned = rates.reindex(asset.index, method="ffill")
     converted = asset * aligned if src == "USD" else asset / aligned
     converted.name = asset_prices.name

@@ -4,6 +4,7 @@ No key. Holds are percent of fund assets, NOT fractions. The index discovers
 US-listed ETF/ETP tickers; non-US listings and non-funds are never guessed.
 Cache is optional/automatic, never a user-maintained holdings database.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,7 +19,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-from portfolio_risk.exposure import Constituent, ExposureError, FundSnapshot
+from portfolio_risk.exposure import Constituent, FundSnapshot
 from portfolio_risk.input import normalize_symbol
 
 BASE_URL = "https://tickerinside.com/api/v1"
@@ -37,7 +38,7 @@ class FundUnavailable(TickerInsideError):
 class FundRecord:
     symbol: str
     name: str
-    holdings: dict[str, float]   # PERCENT of fund NAV, not 0..1
+    holdings: dict[str, float]  # PERCENT of fund NAV, not 0..1
     holdings_as_of: date | None
     source_layer: str
     filed: date | None
@@ -68,13 +69,17 @@ class FundRecord:
             return "mixed_positions"
         if self.holdings_kind == "stock":
             return "explicit_stock"
-        if (self.holdings_kind == "unknown"
+        if (
+            self.holdings_kind == "unknown"
             and self.category_asset_class == "equity"
             and self.category_basis == "holdings"
             and self.category_as_of == self.holdings_as_of
-            and self.category_stock_count is not None and self.category_stock_count > 0
-            and self.sector_coverage_pct is not None and self.sector_coverage_pct >= 95
-            and self.other_funds_pct is not None and self.other_funds_pct <= 0.5
+            and self.category_stock_count is not None
+            and self.category_stock_count > 0
+            and self.sector_coverage_pct is not None
+            and self.sector_coverage_pct >= 95
+            and self.other_funds_pct is not None
+            and self.other_funds_pct <= 0.5
         ):
             return "issuer_evidence"
         return "unverified"
@@ -85,7 +90,9 @@ class FundRecord:
             return False
         if self.non_equity_positions or self.known_pct > 100.00001:
             return False
-        return set(self.holdings).issubset({"GOLD", "SILVER", "PLATINUM", "PALLADIUM", "BITCOIN", "ETHEREUM", "BTC", "ETH"})
+        return set(self.holdings).issubset(
+            {"GOLD", "SILVER", "PLATINUM", "PALLADIUM", "BITCOIN", "ETHEREUM", "BTC", "ETH"}
+        )
 
     @property
     def exposure_support(self) -> str:
@@ -107,20 +114,35 @@ class FundRecord:
         if self.exposure_support == "price_only":
             raise TickerInsideError(
                 f"{self.symbol}: holdings type {self.holdings_kind} cannot be safely expanded "
-                "(bond/derivative/unknown or mixed positions); price-risk analysis only")
+                "(bond/derivative/unknown or mixed positions); price-risk analysis only"
+            )
         if not self.holdings_as_of:
             raise TickerInsideError(f"{self.symbol}: no verified holdings disclosure date")
         if not self.holdings:
             raise TickerInsideError(f"{self.symbol}: no holdings to expand")
         if self.known_pct > 100.00001:
-            raise TickerInsideError(f"{self.symbol}: gross reported weights exceed 100%; unsuitable for long-only look-through")
+            raise TickerInsideError(
+                f"{self.symbol}: gross reported weights exceed 100%; unsuitable for long-only look-through"
+            )
         return FundSnapshot(
             self.symbol,
-            (tuple(Constituent(s, w / 100.0,
-                "equity" if self.exposure_support == "equity" else
-                "crypto" if s in {"BITCOIN", "ETHEREUM", "BTC", "ETH"} else "commodity")
-                for s, w in self.holdings.items())
-             + tuple(Constituent(s, w / 100.0, "cash") for s, w in (self.cash_holdings or {}).items())),
+            (
+                tuple(
+                    Constituent(
+                        s,
+                        w / 100.0,
+                        "equity"
+                        if self.exposure_support == "equity"
+                        else "crypto"
+                        if s in {"BITCOIN", "ETHEREUM", "BTC", "ETH"}
+                        else "commodity",
+                    )
+                    for s, w in self.holdings.items()
+                )
+                + tuple(
+                    Constituent(s, w / 100.0, "cash") for s, w in (self.cash_holdings or {}).items()
+                )
+            ),
             f"TickerInside {self.source_layer}; {self.source_url}; CC BY 4.0",
             self.holdings_as_of,
             date.today(),
@@ -136,7 +158,12 @@ def _percent_map(value: object, field: str, *, total_limit: float = 105.0) -> di
     for raw, weight in value.items():
         if not isinstance(raw, str) or not raw.strip():
             raise TickerInsideError(f"{field}: invalid key")
-        if isinstance(weight, bool) or not isinstance(weight, (int, float)) or not math.isfinite(weight) or weight < 0:
+        if (
+            isinstance(weight, bool)
+            or not isinstance(weight, (int, float))
+            or not math.isfinite(weight)
+            or weight < 0
+        ):
             raise TickerInsideError(f"{field}/{raw}: invalid percent weight")
         if weight > 0:
             key = raw.strip().upper() if field == "holdings" else raw.strip()
@@ -144,20 +171,38 @@ def _percent_map(value: object, field: str, *, total_limit: float = 105.0) -> di
                 raise TickerInsideError(f"{field}: duplicate {key}")
             result[key] = float(weight)
     if sum(result.values()) > total_limit:
-        raise TickerInsideError(f"{field}: reported weights exceed {total_limit}% (possibly leveraged / gross weights); not usable as net exposure")
+        raise TickerInsideError(
+            f"{field}: reported weights exceed {total_limit}% (possibly leveraged / gross weights); not usable as net exposure"
+        )
     return result
 
 
 # Month-coded futures: conservative exclusion from stock-look-through.
-_FUTURE = re.compile(r"^(?:ES|MES|NQ|MNQ|YM|RTY|M2K|CL|MCL|GC|MGC|SI|SIL|ZN|ZB|ZF|ZQ|6E|6B|DX|NG|RB|HO|HG|ZC|ZW|ZS|VX|MFS|MSF)[FGHJKMNQUVXZ]\d{1,2}$", re.I)
-_CASH_WORDS = {"CASH", "USD", "CAD", "USD CASH", "CAD CASH", "US DOLLAR", "US DOLLARS", "DOLLARS", "CASH&OTHER"}
+_FUTURE = re.compile(
+    r"^(?:ES|MES|NQ|MNQ|YM|RTY|M2K|CL|MCL|GC|MGC|SI|SIL|ZN|ZB|ZF|ZQ|6E|6B|DX|NG|RB|HO|HG|ZC|ZW|ZS|VX|MFS|MSF)[FGHJKMNQUVXZ]\d{1,2}$",
+    re.I,
+)
+_CASH_WORDS = {
+    "CASH",
+    "USD",
+    "CAD",
+    "USD CASH",
+    "CAD CASH",
+    "US DOLLAR",
+    "US DOLLARS",
+    "DOLLARS",
+    "CASH&OTHER",
+}
 _NON_EQUITY_WORDS = {"FUTURES", "SWAP", "MARGIN"}
 
 
 def _non_equity_position(name: str) -> bool:
     value = name.strip().upper()
-    return bool(_FUTURE.fullmatch(value) or value in _NON_EQUITY_WORDS or
-                value.startswith(("FUTURE ", "SWAP ", "MARGIN ")))
+    return bool(
+        _FUTURE.fullmatch(value)
+        or value in _NON_EQUITY_WORDS
+        or value.startswith(("FUTURE ", "SWAP ", "MARGIN "))
+    )
 
 
 def _parse_holdings(value: object) -> tuple[dict[str, float], tuple[str, ...], dict[str, float]]:
@@ -179,7 +224,11 @@ def _parse_holdings(value: object) -> tuple[dict[str, float], tuple[str, ...], d
         name = raw.strip().upper()
         if name in included or name in cash:
             raise TickerInsideError(f"holdings: duplicate {name}")
-        if isinstance(weight, bool) or not isinstance(weight, (int, float)) or not math.isfinite(weight):
+        if (
+            isinstance(weight, bool)
+            or not isinstance(weight, (int, float))
+            or not math.isfinite(weight)
+        ):
             raise TickerInsideError(f"holdings/{name}: invalid percent weight")
         if name in _CASH_WORDS or name.startswith("CASH "):
             if 0 <= weight <= 100 and weight > 0:
@@ -195,7 +244,9 @@ def _parse_holdings(value: object) -> tuple[dict[str, float], tuple[str, ...], d
         if weight > 0:
             included[name] = float(weight)
     if sum(included.values()) + sum(cash.values()) > 105:
-        raise TickerInsideError("holdings: reported stock/cash weights exceed 105%; not a valid long-only snapshot")
+        raise TickerInsideError(
+            "holdings: reported stock/cash weights exceed 105%; not a valid long-only snapshot"
+        )
     return included, tuple(skipped), cash
 
 
@@ -233,14 +284,28 @@ def parse_fund_record(payload: object, expected_symbol: str) -> FundRecord:
     stocks = measured.get("stocks")
     if not isinstance(stocks, int) or isinstance(stocks, bool) or stocks < 0:
         stocks = None
-    kind = str(payload.get("holdings_kind") or ("stock" if payload.get("stock_pct") is not None else "unknown")).lower()
+    kind = str(
+        payload.get("holdings_kind")
+        or ("stock" if payload.get("stock_pct") is not None else "unknown")
+    ).lower()
     listed = payload.get("listed_pct")
     if listed is not None:
-        if isinstance(listed, bool) or not isinstance(listed, (int, float)) or not math.isfinite(listed) or listed < 0 or listed > 105:
+        if (
+            isinstance(listed, bool)
+            or not isinstance(listed, (int, float))
+            or not math.isfinite(listed)
+            or listed < 0
+            or listed > 105
+        ):
             raise TickerInsideError("listed_pct invalid")
         listed = float(listed)
     expense = payload.get("expense_ratio")
-    if isinstance(expense, (int, float)) and not isinstance(expense, bool) and math.isfinite(expense) and 0 <= expense <= 100:
+    if (
+        isinstance(expense, (int, float))
+        and not isinstance(expense, bool)
+        and math.isfinite(expense)
+        and 0 <= expense <= 100
+    ):
         expense = float(expense)
     else:
         expense = None
@@ -249,7 +314,7 @@ def parse_fund_record(payload: object, expected_symbol: str) -> FundRecord:
         positions = None
     url = payload.get("page_url")
     if not isinstance(url, str) or not url.startswith("https://tickerinside.com/"):
-        url = f"https://tickerinside.com/api/v1/fund/{quote(symbol.lower(),safe='.')}.json"
+        url = f"https://tickerinside.com/api/v1/fund/{quote(symbol.lower(), safe='.')}.json"
     return FundRecord(
         symbol=symbol,
         name=str(payload.get("name") or symbol),
@@ -279,8 +344,9 @@ def parse_fund_record(payload: object, expected_symbol: str) -> FundRecord:
 class TickerInsideClient:
     """Injectable HTTP getter for deterministic unit tests; no request without a caller."""
 
-    def __init__(self, cache_dir: str | Path = "data/cache/tickerinside", ttl_hours: int = 24,
-                 getter=None):
+    def __init__(
+        self, cache_dir: str | Path = "data/cache/tickerinside", ttl_hours: int = 24, getter=None
+    ):
         if ttl_hours < 0:
             raise ValueError("ttl_hours cannot be negative")
         self.cache_dir = Path(cache_dir)
@@ -312,7 +378,11 @@ class TickerInsideClient:
             try:
                 doc = json.loads(path.read_text(encoding="utf-8"))
                 stored = datetime.fromisoformat(doc["cached_at"])
-                if stored.tzinfo and datetime.now(timezone.utc) - stored < self.ttl and isinstance(doc["payload"], dict):
+                if (
+                    stored.tzinfo
+                    and datetime.now(timezone.utc) - stored < self.ttl
+                    and isinstance(doc["payload"], dict)
+                ):
                     return doc["payload"], True
             except (OSError, ValueError, KeyError, TypeError):
                 pass
@@ -325,7 +395,10 @@ class TickerInsideClient:
                 fd, temp = tempfile.mkstemp(dir=self.cache_dir, prefix="fetch_", suffix=".json")
                 try:
                     with os.fdopen(fd, "w", encoding="utf-8") as f:
-                        json.dump({"cached_at": datetime.now(timezone.utc).isoformat(), "payload": data}, f)
+                        json.dump(
+                            {"cached_at": datetime.now(timezone.utc).isoformat(), "payload": data},
+                            f,
+                        )
                     os.replace(temp, path)
                 finally:
                     if os.path.exists(temp):
@@ -353,5 +426,11 @@ class TickerInsideClient:
                 if isinstance(val, list):
                     names.update(x.upper() for x in val if isinstance(x, str))
         if not names:
-            raise TickerInsideError("TickerInside index returned no fund tickers; cannot discover coverage safely")
-        return names, {"as_of": data.get("as_of"), "coverage": data.get("coverage", {}), "count": len(names)}
+            raise TickerInsideError(
+                "TickerInside index returned no fund tickers; cannot discover coverage safely"
+            )
+        return names, {
+            "as_of": data.get("as_of"),
+            "coverage": data.get("coverage", {}),
+            "count": len(names),
+        }

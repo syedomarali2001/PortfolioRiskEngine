@@ -1,18 +1,26 @@
 from __future__ import annotations
+
 import json
 from pathlib import Path
 
 from portfolio_risk.cli import main
 
-
 PROJECT = Path(__file__).resolve().parents[1] / "examples"
 
 
 def arguments():
-    return ["exposure", str(PROJECT / "exposure_demo_portfolio.csv"),
-            "--holdings-file", str(PROJECT / "exposure_demo_holdings.csv"),
-            "--assets-file", str(PROJECT / "exposure_demo_assets.csv"),
-            "--base", "CAD", "--as-of", "2026-11-07"]
+    return [
+        "exposure",
+        str(PROJECT / "exposure_demo_portfolio.csv"),
+        "--holdings-file",
+        str(PROJECT / "exposure_demo_holdings.csv"),
+        "--assets-file",
+        str(PROJECT / "exposure_demo_assets.csv"),
+        "--base",
+        "CAD",
+        "--as-of",
+        "2026-11-07",
+    ]
 
 
 def test_cli_offline_demo(capsys):
@@ -27,10 +35,12 @@ def test_cli_offline_demo(capsys):
 def test_cli_json_and_coverage(capsys):
     assert main(arguments() + ["--json"]) == 0
     output = json.loads(capsys.readouterr().out)
-    assert output["unknown_underlying"] > .2
+    assert output["unknown_underlying"] > 0.2
     assert output["coverage_by_fund"]["DEMOA"]["as_of"] == "2026-11-01"
-    assert output["pairwise_overlap"][0]["identified_overlap_lower_bound"] == .36 or abs(
-        output["pairwise_overlap"][0]["identified_overlap_lower_bound"] - .36) < 1e-12
+    assert (
+        output["pairwise_overlap"][0]["identified_overlap_lower_bound"] == 0.36
+        or abs(output["pairwise_overlap"][0]["identified_overlap_lower_bound"] - 0.36) < 1e-12
+    )
 
 
 def test_cli_rejects_future_snapshot(capsys):

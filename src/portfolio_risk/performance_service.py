@@ -100,9 +100,9 @@ def run_performance(
         source_info[symbol] = {
             "source": result.history.source,
             "quote_currency": selected,
-            "quote_currency_source": "explicit" if (
-                benchmark_quote_currency if symbol == benchmark_symbol else explicit[symbol]
-            ) else "provider_metadata",
+            "quote_currency_source": "explicit"
+            if (benchmark_quote_currency if symbol == benchmark_symbol else explicit[symbol])
+            else "provider_metadata",
             "first_price_date": result.quality.first_date.isoformat(),
             "last_price_date": result.quality.last_date.isoformat(),
             "rows": result.quality.observation_count,
@@ -144,7 +144,9 @@ def run_performance(
                 max_fx_age_days=max_fx_age_days,
             )
         except (ValueError, FXRateError) as exc:
-            raise PerformanceError(f"{symbol}: base-currency price conversion failed: {exc}") from exc
+            raise PerformanceError(
+                f"{symbol}: base-currency price conversion failed: {exc}"
+            ) from exc
 
     current_weights = {h.symbol: float(h.weight) for h in valuation.holdings}
     output = analyze_performance(

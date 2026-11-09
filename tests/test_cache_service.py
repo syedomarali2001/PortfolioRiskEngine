@@ -30,7 +30,9 @@ def test_cache_roundtrip(tmp_path, price_history_factory):
 
 def test_expired_cache_ignored(tmp_path, price_history_factory):
     cache = HistoryCache(tmp_path)
-    history = replace(price_history_factory(), fetched_at=datetime.now(timezone.utc) - timedelta(days=3))
+    history = replace(
+        price_history_factory(), fetched_at=datetime.now(timezone.utc) - timedelta(days=3)
+    )
     cache.put(history)
     assert cache.get(history.symbol, history.start, history.end) is None
 
@@ -58,9 +60,14 @@ def test_service_reuses_cache_and_refreshes(tmp_path, price_history_factory):
 
 def test_service_rejects_mismatched_provider_metadata(tmp_path, price_history_factory):
     h = price_history_factory(symbol="QQQ")
+
     class WrongProvider:
         def get_history(self, symbol, start, end):
             return h
+
     import pytest
+
     with pytest.raises(ValueError, match="mismatched"):
-        get_validated_history(WrongProvider(), HistoryCache(tmp_path), "GLD", date(2026, 1, 5), date(2026, 1, 9))
+        get_validated_history(
+            WrongProvider(), HistoryCache(tmp_path), "GLD", date(2026, 1, 5), date(2026, 1, 9)
+        )

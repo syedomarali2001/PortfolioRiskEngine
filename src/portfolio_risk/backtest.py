@@ -10,18 +10,18 @@ an executable historical price series. Fees are proportional to gross traded
 notional (both purchases and sales); taxes, spreads, slippage, and financing
 are not modeled. This is a strategy comparison, not a brokerage ledger.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 from math import isfinite
 from typing import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 
-from portfolio_risk.performance import Metrics, PerformanceError, _check_price_frame, _metrics
 from portfolio_risk.historical_fx import _validated_series
+from portfolio_risk.performance import Metrics, PerformanceError, _check_price_frame, _metrics
 
 SCHEDULES = ("buy_hold", "monthly", "quarterly", "semiannual", "annual")
 
@@ -152,9 +152,16 @@ def _run_one(
     notional_turnover = invested
     trades: list[Trade] = []
     for j, symbol in enumerate(columns):
-        trades.append(Trade(dates[0].date().isoformat(), symbol, float(positions[j]),
-                            float(invested * weights[j]),
-                            float(initial_fees * weights[j]), "initial"))
+        trades.append(
+            Trade(
+                dates[0].date().isoformat(),
+                symbol,
+                float(positions[j]),
+                float(invested * weights[j]),
+                float(initial_fees * weights[j]),
+                "initial",
+            )
+        )
 
     values = np.empty(len(dates), dtype=float)
     # First displayed NAV is contributed capital immediately before initial entry.
@@ -175,11 +182,16 @@ def _run_one(
             # Record only meaningful orders; avoiding tiny floating point trades.
             for j, symbol in enumerate(columns):
                 if abs(trade_notional[j]) > pre_wealth * 1e-11:
-                    trades.append(Trade(
-                        dates[i].date().isoformat(), symbol,
-                        float(new_positions[j] - positions[j]), float(trade_notional[j]),
-                        float(abs(trade_notional[j]) * fee_rate), "rebalance"
-                    ))
+                    trades.append(
+                        Trade(
+                            dates[i].date().isoformat(),
+                            symbol,
+                            float(new_positions[j] - positions[j]),
+                            float(trade_notional[j]),
+                            float(abs(trade_notional[j]) * fee_rate),
+                            "rebalance",
+                        )
+                    )
             fees += trade_fees
             notional_turnover += float(np.abs(trade_notional).sum())
             positions = new_positions
@@ -198,13 +210,20 @@ def _run_one(
     metrics = _metrics(returns, dates, annual_risk_free_rate)
     final_positions_value = positions * matrix[-1]
     final_total = float(final_positions_value.sum())
-    final_weights = {s: float(v / final_total) for s, v in zip(columns, final_positions_value)}
+    final_weights = {s: float(v / final_total) for s, v in zip(columns, final_positions_value, strict=False)}
     return StrategyResult(
-        name=schedule, metrics=metrics, ending_value=float(nav.iloc[-1]),
-        total_fees=float(fees), traded_notional=float(notional_turnover),
-        initial_fees=float(initial_fees), rebalance_count=rebalances,
-        trade_count=len(trades), ending_weights=final_weights,
-        maximum_weight_drift=float(max_drift), values=nav, returns=returns,
+        name=schedule,
+        metrics=metrics,
+        ending_value=float(nav.iloc[-1]),
+        total_fees=float(fees),
+        traded_notional=float(notional_turnover),
+        initial_fees=float(initial_fees),
+        rebalance_count=rebalances,
+        trade_count=len(trades),
+        ending_weights=final_weights,
+        maximum_weight_drift=float(max_drift),
+        values=nav,
+        returns=returns,
         weights_over_time=pd.DataFrame(weight_history, index=dates, columns=columns),
         trades=tuple(trades),
     )
@@ -272,8 +291,9 @@ def run_backtest(
     strategy_prices = frame[asset_names]
     fee_rate = fee_bps / 10000.0
     results = {
-        schedule: _run_one(strategy_prices, weights, schedule, initial_capital,
-                           fee_rate, annual_risk_free_rate)
+        schedule: _run_one(
+            strategy_prices, weights, schedule, initial_capital, fee_rate, annual_risk_free_rate
+        )
         for schedule in schedules
     }
     bm_metrics = None
@@ -292,33 +312,46 @@ def run_backtest(
         "market impact, and cash contributions/withdrawals.",
     ]
     if benchmark_symbol:
-        notes.append("Benchmark is a fee-free, buy-and-hold total-return index; "
-                     "strategy entry and turnover fees are included when specified.")
+        notes.append(
+            "Benchmark is a fee-free, buy-and-hold total-return index; "
+            "strategy entry and turnover fees are included when specified."
+        )
     if len(frame) - 1 < 252:
         notes.append("SHORT_SAMPLE: fewer than 252 common-close return periods.")
     return BacktestReport(
         first_date=frame.index[0].date().isoformat(),
         last_date=frame.index[-1].date().isoformat(),
-        observation_dates=len(frame), return_periods=len(frame) - 1,
-        base_currency=base_currency, initial_capital=initial_capital,
-        target_weights=dict(zip(asset_names, weights.tolist())),
-        fee_bps=fee_bps, risk_free_annual=annual_risk_free_rate,
-        strategies=results, benchmark_symbol=benchmark_symbol,
-        benchmark=bm_metrics, benchmark_values=bm_values,
+        observation_dates=len(frame),
+        return_periods=len(frame) - 1,
+        base_currency=base_currency,
+        initial_capital=initial_capital,
+        target_weights=dict(zip(asset_names, weights.tolist(), strict=False)),
+        fee_bps=fee_bps,
+        risk_free_annual=annual_risk_free_rate,
+        strategies=results,
+        benchmark_symbol=benchmark_symbol,
+        benchmark=bm_metrics,
+        benchmark_values=bm_values,
         warnings=tuple(notes),
     )
 
 
-def backtest_as_dict(report: BacktestReport, *, include_series: bool = True,
-                     include_trades: bool = True) -> dict:
+def backtest_as_dict(
+    report: BacktestReport, *, include_series: bool = True, include_trades: bool = True
+) -> dict:
     """Serialize a backtest report for CLI or a future dashboard."""
     from dataclasses import asdict
+
     output = {
         "methodology": "Historical adjusted-price, fractional-unit close-fill simulation",
-        "first_date": report.first_date, "last_date": report.last_date,
-        "observation_dates": report.observation_dates, "return_periods": report.return_periods,
-        "base_currency": report.base_currency, "initial_capital": report.initial_capital,
-        "target_weights": report.target_weights, "fee_bps": report.fee_bps,
+        "first_date": report.first_date,
+        "last_date": report.last_date,
+        "observation_dates": report.observation_dates,
+        "return_periods": report.return_periods,
+        "base_currency": report.base_currency,
+        "initial_capital": report.initial_capital,
+        "target_weights": report.target_weights,
+        "fee_bps": report.fee_bps,
         "annual_risk_free_rate": report.risk_free_annual,
         "benchmark_symbol": report.benchmark_symbol,
         "benchmark": asdict(report.benchmark) if report.benchmark else None,
@@ -327,26 +360,28 @@ def backtest_as_dict(report: BacktestReport, *, include_series: bool = True,
     }
     for name, row in report.strategies.items():
         detail = {
-            "metrics": asdict(row.metrics), "ending_value": row.ending_value,
-            "total_fees": row.total_fees, "traded_notional": row.traded_notional,
+            "metrics": asdict(row.metrics),
+            "ending_value": row.ending_value,
+            "total_fees": row.total_fees,
+            "traded_notional": row.traded_notional,
             "initial_fees": row.initial_fees,
-            "rebalance_count": row.rebalance_count, "trade_count": row.trade_count,
+            "rebalance_count": row.rebalance_count,
+            "trade_count": row.trade_count,
             "ending_weights": row.ending_weights,
             "maximum_weight_drift": row.maximum_weight_drift,
         }
         if include_series:
             detail["portfolio_values"] = [
-                {"date": d.date().isoformat(), "value": float(v)}
-                for d, v in row.values.items()
+                {"date": d.date().isoformat(), "value": float(v)} for d, v in row.values.items()
             ]
             detail["period_returns"] = [
-                {"date": d.date().isoformat(), "return": float(v)}
-                for d, v in row.returns.items()
+                {"date": d.date().isoformat(), "return": float(v)} for d, v in row.returns.items()
             ]
             detail["weights_over_time"] = [
-                {"date": d.date().isoformat(), "weights": {
-                    symbol: float(w) for symbol, w in values.items()
-                }}
+                {
+                    "date": d.date().isoformat(),
+                    "weights": {symbol: float(w) for symbol, w in values.items()},
+                }
                 for d, values in row.weights_over_time.iterrows()
             ]
         if include_trades:

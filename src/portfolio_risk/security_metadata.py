@@ -4,6 +4,7 @@ The provider does not guarantee a match, sector, industry, or domicile. Never
 silently infer a country from a listing suffix or use market domicile as
 revenue/FX exposure. Yahoo market-data terms apply to live use.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -38,14 +39,23 @@ class SecurityProfile:
 
 
 TYPE_TO_KIND = {
-    "EQUITY": "equity", "ETF": "fund", "MUTUALFUND": "fund",
-    "ETN": "fund", "CLOSED_END_FUND": "fund", "CRYPTOCURRENCY": "crypto",
-    "FUTURE": "commodity_future", "INDEX": "index", "CURRENCY": "currency",
+    "EQUITY": "equity",
+    "ETF": "fund",
+    "MUTUALFUND": "fund",
+    "ETN": "fund",
+    "CLOSED_END_FUND": "fund",
+    "CRYPTOCURRENCY": "crypto",
+    "FUTURE": "commodity_future",
+    "INDEX": "index",
+    "CURRENCY": "currency",
 }
 EXPECTED_KINDS = {
-    "US_STOCK": {"equity"}, "CAD_STOCK": {"equity"},
-    "US_ETF": {"fund"}, "CAD_ETF": {"fund"},
-    "COMMODITY_ETP": {"fund"}, "CRYPTO": {"crypto"},
+    "US_STOCK": {"equity"},
+    "CAD_STOCK": {"equity"},
+    "US_ETF": {"fund"},
+    "CAD_ETF": {"fund"},
+    "COMMODITY_ETP": {"fund"},
+    "CRYPTO": {"crypto"},
 }
 
 
@@ -71,18 +81,23 @@ def parse_yahoo_profile(symbol: str, payload: object) -> SecurityProfile:
         market_cap = None
     elif not __import__("math").isfinite(market_cap):
         market_cap = None
-    key_count = sum(bool(_str(payload, key)) for key in
-                    ("shortName", "longName", "quoteType", "sector", "country", "currency"))
+    key_count = sum(
+        bool(_str(payload, key))
+        for key in ("shortName", "longName", "quoteType", "sector", "country", "currency")
+    )
     return SecurityProfile(
-        symbol=sym, status="ok" if key_count and quote_type else "partial" if key_count else "missing",
-        quote_type=quote_type, asset_kind=kind,
+        symbol=sym,
+        status="ok" if key_count and quote_type else "partial" if key_count else "missing",
+        quote_type=quote_type,
+        asset_kind=kind,
         long_name=_str(payload, "longName", "shortName", "displayName"),
         exchange=_str(payload, "exchange", "fullExchangeName"),
         currency=_str(payload, "currency"),
         sector=_str(payload, "sector"),
         industry=_str(payload, "industry"),
         company_country=_str(payload, "country"),
-        website=_str(payload, "website"), market_cap=float(market_cap) if market_cap is not None else None,
+        website=_str(payload, "website"),
+        market_cap=float(market_cap) if market_cap is not None else None,
         note="Company country = reported company location, not revenue/FX/geographic holdings exposure",
     )
 
@@ -102,6 +117,7 @@ class YahooSecurityMetadataProvider:
     @staticmethod
     def _fetch(symbol: str) -> dict:
         import yfinance as yf
+
         return yf.Ticker(symbol).get_info()
 
     def lookup(self, symbol: str) -> SecurityProfile:
@@ -110,4 +126,8 @@ class YahooSecurityMetadataProvider:
             return parse_yahoo_profile(sym, self.getter(sym))
         except Exception as exc:
             # Ticker may exist but metadata may be blocked / rate-limited.
-            return SecurityProfile(sym, status="unavailable", note=f"Metadata lookup unavailable: {type(exc).__name__}: {str(exc)[:160]}")
+            return SecurityProfile(
+                sym,
+                status="unavailable",
+                note=f"Metadata lookup unavailable: {type(exc).__name__}: {str(exc)[:160]}",
+            )

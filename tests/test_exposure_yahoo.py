@@ -6,16 +6,17 @@ from portfolio_risk.exposure_yahoo import _top_holding_rows
 
 
 def test_yahoo_dataframe_top_holdings():
-    frame = pd.DataFrame({"Name": ["Apple", "Microsoft"],
-                          "Holding Percent": [.08, .05]}, index=["AAPL", "MSFT"])
+    frame = pd.DataFrame(
+        {"Name": ["Apple", "Microsoft"], "Holding Percent": [0.08, 0.05]}, index=["AAPL", "MSFT"]
+    )
     result = _top_holding_rows(frame)
     assert result[0].symbol == "AAPL"
-    assert result[0].fraction == .08
+    assert result[0].fraction == 0.08
     assert result[1].asset_class == "UNKNOWN"
 
 
 def test_yahoo_dataframe_symbol_column():
-    frame = pd.DataFrame({"Symbol": ["AAPL"], "Holding Percent": [.08]})
+    frame = pd.DataFrame({"Symbol": ["AAPL"], "Holding Percent": [0.08]})
     assert _top_holding_rows(frame)[0].symbol == "AAPL"
 
 

@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from portfolio_risk.exposure import ExposureError, UNKNOWN
+from portfolio_risk.exposure import UNKNOWN, ExposureError
 from portfolio_risk.exposure_data import load_asset_metadata, load_fund_snapshots
 
 
@@ -15,13 +15,16 @@ def path(tmp_path, text, name="input.csv"):
 
 
 def test_fund_snapshot_csv_round_trip(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source,sector,country\n"
-           "QQQ,AAPL,35,equity,2026-11-01,Invesco,Technology,US\n"
-           "QQQ,MSFT,25,equity,2026-11-01,Invesco,Technology,US\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source,sector,country\n"
+        "QQQ,AAPL,35,equity,2026-11-01,Invesco,Technology,US\n"
+        "QQQ,MSFT,25,equity,2026-11-01,Invesco,Technology,US\n",
+    )
     f = load_fund_snapshots(p)["QQQ"]
     assert len(f.holdings) == 2
     assert f.as_of == date(2026, 11, 1)
-    assert f.holdings[0].fraction == pytest.approx(.35)
+    assert f.holdings[0].fraction == pytest.approx(0.35)
 
 
 def test_asset_class_and_unknown_sector(tmp_path):
@@ -37,7 +40,9 @@ def test_duplicate_asset_metadata_rejected(tmp_path):
         load_asset_metadata(p)
 
 
-@pytest.mark.parametrize("header", ["fund_symbol,holding_symbol,weight_pct", "fund_symbol,as_of,source"])
+@pytest.mark.parametrize(
+    "header", ["fund_symbol,holding_symbol,weight_pct", "fund_symbol,as_of,source"]
+)
 def test_fund_csv_missing_columns_fails(tmp_path, header):
     p = path(tmp_path, header + "\nFOO,BAR,5\n")
     with pytest.raises(ExposureError, match="columns"):
@@ -45,38 +50,53 @@ def test_fund_csv_missing_columns_fails(tmp_path, header):
 
 
 def test_mixed_asof_rejected(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
-           "QQQ,AAPL,25,equity,2026-11-01,issuer\n"
-           "QQQ,MSFT,25,equity,2026-10-01,issuer\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
+        "QQQ,AAPL,25,equity,2026-11-01,issuer\n"
+        "QQQ,MSFT,25,equity,2026-10-01,issuer\n",
+    )
     with pytest.raises(ExposureError, match="mixed"):
         load_fund_snapshots(p)
 
 
 def test_mixed_source_rejected(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
-           "QQQ,AAPL,25,equity,2026-11-01,issuer\n"
-           "QQQ,MSFT,25,equity,2026-11-01,blog\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
+        "QQQ,AAPL,25,equity,2026-11-01,issuer\n"
+        "QQQ,MSFT,25,equity,2026-11-01,blog\n",
+    )
     with pytest.raises(ExposureError, match="mixed"):
         load_fund_snapshots(p)
 
 
 def test_bad_date_rejected(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
-           "QQQ,AAPL,25,equity,not-date,issuer\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
+        "QQQ,AAPL,25,equity,not-date,issuer\n",
+    )
     with pytest.raises(ExposureError, match="as_of"):
         load_fund_snapshots(p)
 
 
 def test_bad_weight_rejected(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
-           "QQQ,AAPL,XX,equity,2026-11-01,issuer\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
+        "QQQ,AAPL,XX,equity,2026-11-01,issuer\n",
+    )
     with pytest.raises(ExposureError, match="invalid weight"):
         load_fund_snapshots(p)
 
 
 def test_zero_weight_rejected(tmp_path):
-    p = path(tmp_path, "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
-           "QQQ,AAPL,0,equity,2026-11-01,issuer\n")
+    p = path(
+        tmp_path,
+        "fund_symbol,holding_symbol,weight_pct,asset_class,as_of,source\n"
+        "QQQ,AAPL,0,equity,2026-11-01,issuer\n",
+    )
     with pytest.raises(ExposureError, match="weight"):
         load_fund_snapshots(p)
 

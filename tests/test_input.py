@@ -23,7 +23,11 @@ def test_sample_file_imported():
 
 def test_txt_and_tsv_are_supported(tmp_path):
     for suffix, separator in [(".txt", ","), (".tsv", "\t")]:
-        path = _write(tmp_path, f"symbol{separator}market_value{separator}currency\nqqq{separator}25.40{separator}usd\n", suffix)
+        path = _write(
+            tmp_path,
+            f"symbol{separator}market_value{separator}currency\nqqq{separator}25.40{separator}usd\n",
+            suffix,
+        )
         result = parse_portfolio(path)
         assert result.holdings[0].symbol == "QQQ"
         assert result.holdings[0].market_value == Decimal("25.40")

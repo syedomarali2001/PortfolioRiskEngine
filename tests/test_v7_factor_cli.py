@@ -1,6 +1,7 @@
 """No-network V7 factor ETF-proxy CLI integration."""
-from datetime import datetime, timezone
+
 import json
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -10,37 +11,67 @@ from portfolio_risk.models import PriceHistory
 
 
 class Cache:
-    def __init__(self, *a, **kw): pass
-    def get(self, *a, **kw): return None
-    def put(self, *a, **kw): pass
+    def __init__(self, *a, **kw):
+        pass
+
+    def get(self, *a, **kw):
+        return None
+
+    def put(self, *a, **kw):
+        pass
 
 
 class Provider:
     def get_history(self, symbol, start, end):
         ix = pd.bdate_range("2024-01-01", "2026-10-15")
-        mapping = {"XEQT.TO": 1, "QQQ": 2, "SCHD": 3, "SPMO": 4,
-                   "BTC-USD": 5, "GLD": 6, "SPY": 7, "MTUM": 8,
-                   "USDCAD=X": 9}
+        mapping = {
+            "XEQT.TO": 1,
+            "QQQ": 2,
+            "SCHD": 3,
+            "SPMO": 4,
+            "BTC-USD": 5,
+            "GLD": 6,
+            "SPY": 7,
+            "MTUM": 8,
+            "USDCAD=X": 9,
+        }
         n = mapping[symbol]
         j = np.arange(len(ix))
-        values = (np.full(len(ix), 1.35) if symbol == "USDCAD=X" else
-                  100*np.cumprod(1.0003+n*.00002+.003*np.sin(j/(7+n))))
+        values = (
+            np.full(len(ix), 1.35)
+            if symbol == "USDCAD=X"
+            else 100 * np.cumprod(1.0003 + n * 0.00002 + 0.003 * np.sin(j / (7 + n)))
+        )
         s = pd.Series(values, index=ix)
         s = s.loc[(s.index.date >= start) & (s.index.date < end)]
-        return PriceHistory(symbol, s, start, end, "OfflineProvider",
-                            datetime.now(timezone.utc), None)
+        return PriceHistory(
+            symbol, s, start, end, "OfflineProvider", datetime.now(timezone.utc), None
+        )
 
 
 def setup(monkeypatch):
     import portfolio_risk.cli as cli
+
     monkeypatch.setattr(cli, "YahooFinanceProvider", Provider)
     monkeypatch.setattr(cli, "HistoryCache", Cache)
 
 
 def args():
-    return ["factors", "examples/sample_portfolio_v3.csv", "--base", "CAD",
-            "--start", "2024-01-01", "--end", "2026-10-16",
-            "--usd-cad", "1.35", "--proxies", "SPY:USD", "MTUM:USD"]
+    return [
+        "factors",
+        "examples/sample_portfolio_v3.csv",
+        "--base",
+        "CAD",
+        "--start",
+        "2024-01-01",
+        "--end",
+        "2026-10-16",
+        "--usd-cad",
+        "1.35",
+        "--proxies",
+        "SPY:USD",
+        "MTUM:USD",
+    ]
 
 
 def test_cli_factor_proxy_json(monkeypatch, capsys):
@@ -67,6 +98,5 @@ def test_cli_factor_input_invalid_proxy(capsys):
 
 
 def test_cli_factor_no_future_dates(capsys):
-    assert main(["factors", "examples/sample_portfolio_v3.csv",
-                 "--start", "2099-01-01"]) == 2
+    assert main(["factors", "examples/sample_portfolio_v3.csv", "--start", "2099-01-01"]) == 2
     assert "DATE ERROR" in capsys.readouterr().err

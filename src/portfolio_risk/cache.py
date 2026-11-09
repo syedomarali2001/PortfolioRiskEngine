@@ -35,10 +35,19 @@ class HistoryCache:
             fetched = datetime.fromisoformat(payload["fetched_at"])
             if fetched.tzinfo is None or datetime.now(timezone.utc) - fetched > self.ttl:
                 return None
-            if payload["symbol"] != symbol or payload["start"] != start.isoformat() or payload["end"] != end.isoformat():
+            if (
+                payload["symbol"] != symbol
+                or payload["start"] != start.isoformat()
+                or payload["end"] != end.isoformat()
+            ):
                 return None
             idx = pd.to_datetime([row[0] for row in payload["observations"]])
-            prices = pd.Series([float(row[1]) for row in payload["observations"]], index=idx, name="adjusted_close", dtype=float)
+            prices = pd.Series(
+                [float(row[1]) for row in payload["observations"]],
+                index=idx,
+                name="adjusted_close",
+                dtype=float,
+            )
             return PriceHistory(
                 symbol=symbol,
                 prices=prices,
@@ -63,7 +72,9 @@ class HistoryCache:
             "fetched_at": history.fetched_at.isoformat(),
             "quote_currency": history.quote_currency,
             "adjusted": history.adjusted,
-            "observations": [[ts.date().isoformat(), float(value)] for ts, value in history.prices.items()],
+            "observations": [
+                [ts.date().isoformat(), float(value)] for ts, value in history.prices.items()
+            ],
         }
         output = self._path(history.symbol, history.start, history.end)
         fd, temporary = tempfile.mkstemp(dir=self.root, prefix="tmp_", suffix=".json")

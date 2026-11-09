@@ -1,4 +1,5 @@
 """V7 deterministic coverage, nested funds, overlap, and validation tests."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -8,18 +9,23 @@ import pytest
 
 from portfolio_risk.accounting import value_portfolio
 from portfolio_risk.exposure import (
-    UNKNOWN, Constituent, ExposureError, FundSnapshot, SecurityMetadata,
-    analyze_exposure, exposure_as_dict,
+    UNKNOWN,
+    Constituent,
+    ExposureError,
+    FundSnapshot,
+    SecurityMetadata,
+    analyze_exposure,
+    exposure_as_dict,
 )
 from portfolio_risk.models import Holding, PortfolioInput
-
 
 CUTOFF = date(2026, 11, 7)
 
 
 def portfolio(*parts):
-    return value_portfolio(PortfolioInput(
-        tuple(Holding(s, Decimal(str(n)), "CAD") for s, n in parts), "test.csv"))
+    return value_portfolio(
+        PortfolioInput(tuple(Holding(s, Decimal(str(n)), "CAD") for s, n in parts), "test.csv")
+    )
 
 
 def snap(symbol, *holdings, as_of=date(2026, 11, 1), source="official issuer"):
@@ -31,12 +37,16 @@ def h(symbol, percent, kind="equity", sector="Technology", country="US"):
 
 
 def run(val, snaps=None, classes=None, **kwargs):
-    return analyze_exposure(val, snapshots=snaps, classifications=classes,
-                            analysis_date=CUTOFF, **kwargs)
+    return analyze_exposure(
+        val, snapshots=snaps, classifications=classes, analysis_date=CUTOFF, **kwargs
+    )
 
 
 def test_direct_stock_known_exposure():
-    r = run(portfolio(("AAPL", 100)), classes={"AAPL": SecurityMetadata("AAPL", "equity", "Technology", "US")})
+    r = run(
+        portfolio(("AAPL", 100)),
+        classes={"AAPL": SecurityMetadata("AAPL", "equity", "Technology", "US")},
+    )
     assert r.identified_underlying["AAPL"] == 1
     assert r.by_sector["Technology"] == 1
     assert r.by_country["US"] == 1
@@ -59,10 +69,10 @@ def test_known_crypto_not_assigned_a_stock_sector_or_country():
 
 def test_partial_etf_unknown_not_conjured_as_known():
     r = run(portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 30))})
-    assert r.identified_underlying["AAPL"] == pytest.approx(.30)
-    assert r.unknown_underlying == pytest.approx(.70)
-    assert r.by_sector[UNKNOWN] == pytest.approx(.70)
-    assert r.coverage_by_fund["FUND"]["identified_fraction_of_fund"] == pytest.approx(.3)
+    assert r.identified_underlying["AAPL"] == pytest.approx(0.30)
+    assert r.unknown_underlying == pytest.approx(0.70)
+    assert r.by_sector[UNKNOWN] == pytest.approx(0.70)
+    assert r.coverage_by_fund["FUND"]["identified_fraction_of_fund"] == pytest.approx(0.3)
 
 
 def test_missing_fund_snapshot_is_unknown_not_fund_symbol_leaf():
@@ -78,10 +88,10 @@ def test_nested_etf_recursion_and_unknown_propagation():
         "B": snap("B", h("MSFT", 50)),
     }
     r = run(portfolio(("A", 100)), funds)
-    assert r.identified_underlying["AAPL"] == pytest.approx(.2)
-    assert r.identified_underlying["MSFT"] == pytest.approx(.2)
-    assert r.unknown_underlying == pytest.approx(.6)
-    assert r.by_asset_class["equity"] == pytest.approx(.4)
+    assert r.identified_underlying["AAPL"] == pytest.approx(0.2)
+    assert r.identified_underlying["MSFT"] == pytest.approx(0.2)
+    assert r.unknown_underlying == pytest.approx(0.6)
+    assert r.by_asset_class["equity"] == pytest.approx(0.4)
 
 
 def test_same_equity_inside_multiple_funds_aggregates_correctly():
@@ -90,9 +100,9 @@ def test_same_equity_inside_multiple_funds_aggregates_correctly():
         "B": snap("B", h("AAPL", 20)),
     }
     r = run(portfolio(("A", 60), ("B", 40)), funds)
-    assert r.identified_underlying["AAPL"] == pytest.approx(.32)
-    assert r.unknown_underlying == pytest.approx(.68)
-    assert r.pairwise_overlap[0]["identified_overlap_lower_bound"] == pytest.approx(.2)
+    assert r.identified_underlying["AAPL"] == pytest.approx(0.32)
+    assert r.unknown_underlying == pytest.approx(0.68)
+    assert r.pairwise_overlap[0]["identified_overlap_lower_bound"] == pytest.approx(0.2)
 
 
 def test_overlap_does_not_count_generic_cash_as_shared_security():
@@ -111,7 +121,7 @@ def test_overlap_is_fund_weight_percentage_not_portfolio_weight():
         "B": snap("B", h("AAPL", 40)),
     }
     r = run(portfolio(("A", 10), ("B", 90)), funds)
-    assert r.pairwise_overlap[0]["identified_overlap_lower_bound"] == pytest.approx(.2)
+    assert r.pairwise_overlap[0]["identified_overlap_lower_bound"] == pytest.approx(0.2)
 
 
 def test_full_known_funds_produce_zero_unknown():
@@ -122,9 +132,14 @@ def test_full_known_funds_produce_zero_unknown():
 
 def test_partitions_sum_to_one():
     val = portfolio(("A", 1), ("BTC", 2), ("MSFT", 4))
-    r = run(val, {"A": snap("A", h("AAPL", 30))},
-            {"BTC": SecurityMetadata("BTC", "crypto"),
-             "MSFT": SecurityMetadata("MSFT", "equity", "Technology", "US")})
+    r = run(
+        val,
+        {"A": snap("A", h("AAPL", 30))},
+        {
+            "BTC": SecurityMetadata("BTC", "crypto"),
+            "MSFT": SecurityMetadata("MSFT", "equity", "Technology", "US"),
+        },
+    )
     assert sum(r.by_asset_class.values()) == pytest.approx(1)
     assert sum(r.by_sector.values()) == pytest.approx(1)
     assert sum(r.by_country.values()) == pytest.approx(1)
@@ -132,14 +147,19 @@ def test_partitions_sum_to_one():
 
 
 def test_stock_metadata_fills_missing_disclosure_sector():
-    r = run(portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 100, "equity", "", ""))},
-            {"AAPL": SecurityMetadata("AAPL", "equity", "Technology", "US")})
+    r = run(
+        portfolio(("FUND", 100)),
+        {"FUND": snap("FUND", h("AAPL", 100, "equity", "", ""))},
+        {"AAPL": SecurityMetadata("AAPL", "equity", "Technology", "US")},
+    )
     assert r.by_sector["Technology"] == 1
     assert r.by_country["US"] == 1
 
 
 def test_stale_snapshot_is_warning_not_automatic_exclusion():
-    r = run(portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 100), as_of=date(2025, 1, 1))})
+    r = run(
+        portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 100), as_of=date(2025, 1, 1))}
+    )
     assert any("days old" in x for x in r.warnings)
     assert r.identified_underlying["AAPL"] == 1
 
@@ -152,10 +172,13 @@ def test_unverified_asof_is_visible():
 
 def test_future_snapshot_rejected():
     with pytest.raises(ExposureError, match="AFTER"):
-        run(portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 100), as_of=date(2026, 11, 8))})
+        run(
+            portfolio(("FUND", 100)),
+            {"FUND": snap("FUND", h("AAPL", 100), as_of=date(2026, 11, 8))},
+        )
 
 
-@pytest.mark.parametrize("bad", [float('nan'), float('inf'), -0.1, 0, 1.01])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), -0.1, 0, 1.01])
 def test_invalid_weights_rejected(bad):
     with pytest.raises(ExposureError):
         run(portfolio(("FUND", 100)), {"FUND": snap("FUND", Constituent("AAPL", bad, "equity"))})
@@ -200,9 +223,12 @@ def test_bad_max_age_rejected():
 
 def test_json_output_is_serializable():
     import json
+
     r = run(portfolio(("FUND", 100)), {"FUND": snap("FUND", h("AAPL", 25))})
     data = exposure_as_dict(r)
-    assert json.loads(json.dumps(data, allow_nan=False))["unknown_underlying"] == pytest.approx(.75)
+    assert json.loads(json.dumps(data, allow_nan=False))["unknown_underlying"] == pytest.approx(
+        0.75
+    )
     assert data["analysis_date"] == CUTOFF.isoformat()
 
 

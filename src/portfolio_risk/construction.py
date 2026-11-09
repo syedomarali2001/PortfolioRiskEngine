@@ -9,6 +9,7 @@ avoids using a closing price to determine an order assumed executed at that
 same close. Rebalancing happens at the first common close of a new calendar
 period, using the current and previous known dates (no next-date peeking).
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -23,7 +24,14 @@ from portfolio_risk.backtest import Trade, _rebalance_at_close
 from portfolio_risk.historical_fx import _validated_series
 from portfolio_risk.performance import Metrics, PerformanceError, _check_price_frame, _metrics
 
-METHODS = ("input_buy_hold", "input_rebalanced", "equal_weight", "inverse_vol", "min_variance", "momentum_top_k")
+METHODS = (
+    "input_buy_hold",
+    "input_rebalanced",
+    "equal_weight",
+    "inverse_vol",
+    "min_variance",
+    "momentum_top_k",
+)
 FREQUENCIES = ("monthly", "quarterly", "semiannual", "annual")
 
 
@@ -74,18 +82,23 @@ class ConstructionReport:
     warnings: tuple[str, ...]
 
 
-def _first_close_of_new_period(dates: pd.DatetimeIndex, position: int,
-                               frequency: str) -> bool:
+def _first_close_of_new_period(dates: pd.DatetimeIndex, position: int, frequency: str) -> bool:
     """Decide a rebalance from the current date and immediately previous date."""
     if position <= 0 or position >= len(dates):
         return False
-    previous, current = dates[position-1], dates[position]
+    previous, current = dates[position - 1], dates[position]
     if frequency == "monthly":
         return (previous.year, previous.month) != (current.year, current.month)
     if frequency == "quarterly":
-        return (previous.year, (previous.month-1)//3) != (current.year, (current.month-1)//3)
+        return (previous.year, (previous.month - 1) // 3) != (
+            current.year,
+            (current.month - 1) // 3,
+        )
     if frequency == "semiannual":
-        return (previous.year, (previous.month-1)//6) != (current.year, (current.month-1)//6)
+        return (previous.year, (previous.month - 1) // 6) != (
+            current.year,
+            (current.month - 1) // 6,
+        )
     if frequency == "annual":
         return previous.year != current.year
     raise ConstructionError("Unknown calendar frequency")
@@ -112,8 +125,7 @@ def _capped_simplex_projection(vector: np.ndarray, maximum: float) -> np.ndarray
     return w
 
 
-def _minimum_variance(covariance: np.ndarray, *, max_weight: float,
-                      shrinkage: float) -> np.ndarray:
+def _minimum_variance(covariance: np.ndarray, *, max_weight: float, shrinkage: float) -> np.ndarray:
     """Long-only minimum variance via projected gradient, with diagonal shrinkage.
 
     No expected-return prediction. Convex on PSD sample covariance; small
@@ -138,9 +150,16 @@ def _minimum_variance(covariance: np.ndarray, *, max_weight: float,
     return w
 
 
-def _allocation(method: str, samples: np.ndarray, reference: np.ndarray, *,
-                max_weight: float, shrinkage: float, top_k: int,
-                skip: int) -> np.ndarray:
+def _allocation(
+    method: str,
+    samples: np.ndarray,
+    reference: np.ndarray,
+    *,
+    max_weight: float,
+    shrinkage: float,
+    top_k: int,
+    skip: int,
+) -> np.ndarray:
     """Estimate target from strictly older *asset* returns (rows=dates)."""
     n = samples.shape[1]
     if method in {"input_buy_hold", "input_rebalanced"}:
@@ -199,12 +218,19 @@ def _strategy(
         # Most recent usable row at close i: row i-2 (previous close).
         ending = i - 1  # exclusive, so previous-close returns are last included
         count = lookback + (skip if method == "momentum_top_k" else 0)
-        sample = full_returns[ending-count:ending]
+        sample = full_returns[ending - count : ending]
         if sample.shape != (count, n):
             raise ConstructionError("Not enough prior observations for signal")
-        result = _allocation(method, sample, reference, max_weight=max_weight,
-                             shrinkage=shrinkage, top_k=top_k, skip=skip)
-        if not np.isfinite(result).all() or (result < -1e-10).any() or abs(result.sum()-1) > 1e-9:
+        result = _allocation(
+            method,
+            sample,
+            reference,
+            max_weight=max_weight,
+            shrinkage=shrinkage,
+            top_k=top_k,
+            skip=skip,
+        )
+        if not np.isfinite(result).all() or (result < -1e-10).any() or abs(result.sum() - 1) > 1e-9:
             raise ConstructionError("Invalid strategy weights")
         return result
 
@@ -216,9 +242,18 @@ def _strategy(
     initial_fees = capital - funded
     costs = initial_fees
     traded = funded
-    trades = [Trade(dates[0].date().isoformat(), symbol, float(positions[j]),
-                    float(funded * first_target[j]), float(initial_fees * first_target[j]),
-                    "initial") for j, symbol in enumerate(symbols) if first_target[j] > 1e-12]
+    trades = [
+        Trade(
+            dates[0].date().isoformat(),
+            symbol,
+            float(positions[j]),
+            float(funded * first_target[j]),
+            float(initial_fees * first_target[j]),
+            "initial",
+        )
+        for j, symbol in enumerate(symbols)
+        if first_target[j] > 1e-12
+    ]
     values = np.empty(len(dates))
     values[0] = capital  # V4 convention: entry cost appears in next realized return
     history = np.empty((len(dates), n))
@@ -236,9 +271,16 @@ def _strategy(
             new_pos, fee, changes = _rebalance_at_close(positions, matrix[step], desired, fee_rate)
             for j, symbol in enumerate(symbols):
                 if abs(changes[j]) > wealth * 1e-11:
-                    trades.append(Trade(dates[step].date().isoformat(), symbol,
-                                        float(new_pos[j]-positions[j]), float(changes[j]),
-                                        float(abs(changes[j])*fee_rate), "rebalance"))
+                    trades.append(
+                        Trade(
+                            dates[step].date().isoformat(),
+                            symbol,
+                            float(new_pos[j] - positions[j]),
+                            float(changes[j]),
+                            float(abs(changes[j]) * fee_rate),
+                            "rebalance",
+                        )
+                    )
             costs += fee
             traded += float(np.abs(changes).sum())
             positions = new_pos
@@ -254,21 +296,33 @@ def _strategy(
     eval_metrics = None
     if evaluation_start is not None:
         i = int(dates.searchsorted(pd.Timestamp(evaluation_start)))
-        if i < 1 or i >= len(dates)-2:
-            raise ConstructionError("Evaluation date must leave a prior observation and two future returns")
+        if i < 1 or i >= len(dates) - 2:
+            raise ConstructionError(
+                "Evaluation date must leave a prior observation and two future returns"
+            )
         # Evaluation start is the first observed return date >= cutoff.
         # Include the prior close only as a comparison anchor.
-        eval_returns = returns.iloc[i-1:]
-        eval_dates = dates[i-1:]
+        eval_returns = returns.iloc[i - 1 :]
+        eval_dates = dates[i - 1 :]
         eval_metrics = _metrics(eval_returns, eval_dates, annual_risk_free)
     ending = positions * matrix[-1]
     final = float(ending.sum())
-    return AllocationResult(method, metrics, eval_metrics, float(nav.iloc[-1]),
-                            float(costs), float(traded), rebalances, len(trades),
-                            {s: float(ending[j]/final) for j, s in enumerate(symbols)},
-                            nav, returns,
-                            pd.DataFrame(history, index=dates, columns=symbols),
-                            tuple(trades), {s: float(last_target[j]) for j,s in enumerate(symbols)})
+    return AllocationResult(
+        method,
+        metrics,
+        eval_metrics,
+        float(nav.iloc[-1]),
+        float(costs),
+        float(traded),
+        rebalances,
+        len(trades),
+        {s: float(ending[j] / final) for j, s in enumerate(symbols)},
+        nav,
+        returns,
+        pd.DataFrame(history, index=dates, columns=symbols),
+        tuple(trades),
+        {s: float(last_target[j]) for j, s in enumerate(symbols)},
+    )
 
 
 def run_construction(
@@ -311,7 +365,7 @@ def run_construction(
         raise ConstructionError("Lookback must be >= 30 common-close returns")
     if not isinstance(momentum_skip, int) or momentum_skip < 0 or momentum_skip > lookback:
         raise ConstructionError("Momentum skip must be within 0..lookback")
-    if not methods or len(methods) != len(set(methods)) or set(methods)-set(METHODS):
+    if not methods or len(methods) != len(set(methods)) or set(methods) - set(METHODS):
         raise ConstructionError("Unknown or duplicate methods")
     if not isinstance(top_k, int) or top_k < 1:
         raise ConstructionError("top_k must be a positive integer")
@@ -324,15 +378,17 @@ def run_construction(
     symbols = list(asset_prices_in_base)
     n = len(symbols)
     ref = np.array([float(reference_weights[s]) for s in symbols])
-    if not np.isfinite(ref).all() or (ref <= 0).any() or abs(float(ref.sum())-1)>1e-9:
+    if not np.isfinite(ref).all() or (ref <= 0).any() or abs(float(ref.sum()) - 1) > 1e-9:
         raise ConstructionError("Reference weights must be positive and sum to 1")
     if top_k > n and "momentum_top_k" in methods:
         raise ConstructionError("top_k cannot exceed number of assets")
-    if n*max_weight < 1-1e-12 and any(m in methods for m in ("equal_weight", "min_variance", "inverse_vol")):
+    if n * max_weight < 1 - 1e-12 and any(
+        m in methods for m in ("equal_weight", "min_variance", "inverse_vol")
+    ):
         raise ConstructionError("max_weight too restrictive for this asset universe")
-    if "momentum_top_k" in methods and top_k*max_weight < 1-1e-12:
+    if "momentum_top_k" in methods and top_k * max_weight < 1 - 1e-12:
         raise ConstructionError("max_weight must be at least 1/top_k for momentum")
-    if (benchmark_prices_in_base is None)!=(benchmark_symbol is None):
+    if (benchmark_prices_in_base is None) != (benchmark_symbol is None):
         raise ConstructionError("Benchmark price and name must be provided together")
     if benchmark_symbol in asset_prices_in_base:
         raise ConstructionError("Benchmark must be a different ticker")
@@ -350,17 +406,29 @@ def run_construction(
     if len(frame) - warmup < 30:
         raise ConstructionError(
             f"Not enough shared observations for V6: {len(frame)} available, "
-            f"need at least {warmup+30} (warmup {warmup})"
+            f"need at least {warmup + 30} (warmup {warmup})"
         )
     common_prices = frame[symbols]
     fee_rate = fee_bps / 10000
-    outcomes = {m: _strategy(common_prices, ref, m, first_position=warmup,
-                             lookback=lookback, skip=momentum_skip, top_k=top_k,
-                             max_weight=max_weight, shrinkage=shrinkage,
-                             fee_rate=fee_rate, capital=capital, frequency=frequency,
-                             annual_risk_free=annual_risk_free,
-                             evaluation_start=evaluation_start)
-                for m in methods}
+    outcomes = {
+        m: _strategy(
+            common_prices,
+            ref,
+            m,
+            first_position=warmup,
+            lookback=lookback,
+            skip=momentum_skip,
+            top_k=top_k,
+            max_weight=max_weight,
+            shrinkage=shrinkage,
+            fee_rate=fee_rate,
+            capital=capital,
+            frequency=frequency,
+            annual_risk_free=annual_risk_free,
+            evaluation_start=evaluation_start,
+        )
+        for m in methods
+    }
     started = frame.index[warmup:]
     bmetrics = None
     beval = None
@@ -370,7 +438,9 @@ def run_construction(
         bmetrics = _metrics(bret, started, annual_risk_free)
         if evaluation_start:
             first_eval = int(started.searchsorted(pd.Timestamp(evaluation_start)))
-            beval = _metrics(bret.iloc[first_eval-1:], started[first_eval-1:], annual_risk_free)
+            beval = _metrics(
+                bret.iloc[first_eval - 1 :], started[first_eval - 1 :], annual_risk_free
+            )
     notes = [
         "Target weights provided today are applied retroactively as a reference only, not actual personal performance.",
         "Strategy signals use only observations through the PREVIOUS common close, never the current trade close.",
@@ -381,48 +451,84 @@ def run_construction(
         "Momentum rotates among the top assets even if all have negative momentum; there is no cash fallback.",
     ]
     if evaluation_start:
-        notes.append("Evaluation metrics summarize a later calendar segment, but model selection after inspecting it invalidates an untouched holdout.")
-    return ConstructionReport(started[0].date().isoformat(), started[-1].date().isoformat(),
-                              len(started), len(started)-1, lookback, momentum_skip,
-                              top_k, max_weight, shrinkage, frequency, capital,
-                              base_currency, fee_bps, annual_risk_free,
-                              dict(zip(symbols, ref.tolist())), outcomes,
-                              evaluation_start.isoformat() if evaluation_start else None,
-                              benchmark_symbol, bmetrics, beval, tuple(notes))
+        notes.append(
+            "Evaluation metrics summarize a later calendar segment, but model selection after inspecting it invalidates an untouched holdout."
+        )
+    return ConstructionReport(
+        started[0].date().isoformat(),
+        started[-1].date().isoformat(),
+        len(started),
+        len(started) - 1,
+        lookback,
+        momentum_skip,
+        top_k,
+        max_weight,
+        shrinkage,
+        frequency,
+        capital,
+        base_currency,
+        fee_bps,
+        annual_risk_free,
+        dict(zip(symbols, ref.tolist(), strict=False)),
+        outcomes,
+        evaluation_start.isoformat() if evaluation_start else None,
+        benchmark_symbol,
+        bmetrics,
+        beval,
+        tuple(notes),
+    )
 
 
-def construction_as_dict(report: ConstructionReport, *, include_series: bool = True,
-                         include_trades: bool = True) -> dict:
+def construction_as_dict(
+    report: ConstructionReport, *, include_series: bool = True, include_trades: bool = True
+) -> dict:
     out = {
         "methodology": "V6 ex-ante rolling allocation research on observed common closes",
-        "first_date": report.first_date, "last_date": report.last_date,
-        "observation_dates": report.observation_dates, "return_periods": report.return_periods,
-        "lookback": report.historical_lookback, "momentum_skip": report.momentum_skip,
-        "top_k": report.top_k, "max_weight": report.max_weight,
-        "shrinkage": report.shrinkage, "rebalance_frequency": report.rebalance_frequency,
-        "initial_capital": report.initial_capital, "base_currency": report.base_currency,
-        "fee_bps": report.fee_bps, "risk_free_annual": report.risk_free_annual,
+        "first_date": report.first_date,
+        "last_date": report.last_date,
+        "observation_dates": report.observation_dates,
+        "return_periods": report.return_periods,
+        "lookback": report.historical_lookback,
+        "momentum_skip": report.momentum_skip,
+        "top_k": report.top_k,
+        "max_weight": report.max_weight,
+        "shrinkage": report.shrinkage,
+        "rebalance_frequency": report.rebalance_frequency,
+        "initial_capital": report.initial_capital,
+        "base_currency": report.base_currency,
+        "fee_bps": report.fee_bps,
+        "risk_free_annual": report.risk_free_annual,
         "reference_weights": report.reference_weights,
         "benchmark_symbol": report.benchmark_symbol,
         "benchmark_metrics": asdict(report.benchmark_metrics) if report.benchmark_metrics else None,
-        "benchmark_evaluation_metrics": asdict(report.benchmark_evaluation_metrics) if report.benchmark_evaluation_metrics else None,
+        "benchmark_evaluation_metrics": asdict(report.benchmark_evaluation_metrics)
+        if report.benchmark_evaluation_metrics
+        else None,
         "evaluation_start": report.evaluation_start,
-        "warnings": list(report.warnings), "strategies": {},
+        "warnings": list(report.warnings),
+        "strategies": {},
     }
     for name, row in report.results.items():
         info = {
-            "ending_value": row.ending_value, "metrics": asdict(row.metrics),
-            "evaluation_metrics": asdict(row.evaluation_metrics) if row.evaluation_metrics else None,
-            "total_fees": row.total_fees, "traded_notional": row.traded_notional,
-            "rebalance_count": row.rebalance_count, "trade_count": row.trade_count,
-            "ending_weights": row.ending_weights, "last_target": row.last_target,
+            "ending_value": row.ending_value,
+            "metrics": asdict(row.metrics),
+            "evaluation_metrics": asdict(row.evaluation_metrics)
+            if row.evaluation_metrics
+            else None,
+            "total_fees": row.total_fees,
+            "traded_notional": row.traded_notional,
+            "rebalance_count": row.rebalance_count,
+            "trade_count": row.trade_count,
+            "ending_weights": row.ending_weights,
+            "last_target": row.last_target,
         }
         if include_series:
-            info["portfolio_values"] = [{"date": ts.date().isoformat(), "value": float(v)}
-                                        for ts, v in row.values.items()]
+            info["portfolio_values"] = [
+                {"date": ts.date().isoformat(), "value": float(v)} for ts, v in row.values.items()
+            ]
             info["weights_over_time"] = [
-                {"date": ts.date().isoformat(), "weights": {s: float(w) for s,w in r.items()}}
-                for ts,r in row.weights_over_time.iterrows()
+                {"date": ts.date().isoformat(), "weights": {s: float(w) for s, w in r.items()}}
+                for ts, r in row.weights_over_time.iterrows()
             ]
         if include_trades:
             info["trades"] = [asdict(t) for t in row.trades]

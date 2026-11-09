@@ -3,6 +3,7 @@
 This module never downloads holdings data. CSVs from ETF providers or user
 research are normalized to a common schema without guessing omitted weights.
 """
+
 from __future__ import annotations
 
 import csv
@@ -11,8 +12,13 @@ from datetime import date
 from pathlib import Path
 
 from portfolio_risk.exposure import (
-    ASSET_CLASSES, UNKNOWN, Constituent, ExposureError, FundSnapshot,
-    SecurityMetadata, validate_snapshots,
+    ASSET_CLASSES,
+    UNKNOWN,
+    Constituent,
+    ExposureError,
+    FundSnapshot,
+    SecurityMetadata,
+    validate_snapshots,
 )
 from portfolio_risk.input import PortfolioFormatError, normalize_symbol
 
@@ -61,7 +67,9 @@ def _class(raw: str, *, default: str = UNKNOWN) -> str:
     if value.lower() == "unknown":
         return UNKNOWN
     if value not in ASSET_CLASSES:
-        raise ExposureError(f"Unrecognized asset_class {raw!r}; use equity, etf, bond, cash, commodity, crypto, other")
+        raise ExposureError(
+            f"Unrecognized asset_class {raw!r}; use equity, etf, bond, cash, commodity, crypto, other"
+        )
     return value
 
 
@@ -77,7 +85,9 @@ def load_asset_metadata(path: str | Path) -> dict[str, SecurityMetadata]:
         if symbol in result:
             raise ExposureError(f"Duplicate asset classification: {symbol}")
         result[symbol] = SecurityMetadata(
-            symbol, _class(row["asset_class"]), _label(row.get("sector", "")),
+            symbol,
+            _class(row["asset_class"]),
+            _label(row.get("sector", "")),
             _label(row.get("country", "")),
         )
     return result
@@ -91,7 +101,9 @@ def load_fund_snapshots(path: str | Path) -> dict[str, FundSnapshot]:
     """
     grouped: dict[str, list[Constituent]] = defaultdict(list)
     sources: dict[str, tuple[date, str]] = {}
-    for row in _rows(path, {"fund_symbol", "holding_symbol", "weight_pct", "asset_class", "as_of", "source"}):
+    for row in _rows(
+        path, {"fund_symbol", "holding_symbol", "weight_pct", "asset_class", "as_of", "source"}
+    ):
         fund = _symbol(row["fund_symbol"])
         constituent = _symbol(row["holding_symbol"])
         try:
@@ -106,12 +118,19 @@ def load_fund_snapshots(path: str | Path) -> dict[str, FundSnapshot]:
         if not src:
             raise ExposureError(f"{fund}: source attribution is required")
         if fund in sources and sources[fund] != (as_of, src):
-            raise ExposureError(f"{fund}: mixed disclosure dates or sources; use one snapshot per fund")
+            raise ExposureError(
+                f"{fund}: mixed disclosure dates or sources; use one snapshot per fund"
+            )
         sources[fund] = (as_of, src)
-        grouped[fund].append(Constituent(
-            constituent, pct / 100.0, _class(row["asset_class"]),
-            _label(row.get("sector", "")), _label(row.get("country", "")),
-        ))
+        grouped[fund].append(
+            Constituent(
+                constituent,
+                pct / 100.0,
+                _class(row["asset_class"]),
+                _label(row.get("sector", "")),
+                _label(row.get("country", "")),
+            )
+        )
     output = {
         fund: FundSnapshot(fund, tuple(parts), sources[fund][1], sources[fund][0])
         for fund, parts in grouped.items()

@@ -23,4 +23,5 @@ def price_history_factory():
             quote_currency="USD",
             adjusted=True,
         )
+
     return make
