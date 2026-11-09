@@ -30,7 +30,10 @@ def test_every_sample_is_bounded_unique_and_importable():
                     (r["symbol"], r["market_value"], r["currency"], r["quote_currency"])
                     for r in holdings]
         stored_file = ROOT / "examples" / "demo_portfolios" / f"{example.key}.csv"
-        assert stored_file.read_bytes() == exported.encode("utf-8")
+        # Compare CSV content without depending on Windows vs. Linux line endings.
+        stored = stored_file.read_bytes().replace(b"\r\n", b"\n")
+        generated = exported.encode("utf-8").replace(b"\r\n", b"\n")
+        assert stored == generated
 
 
 def test_original_starter_allocation_is_preserved():
