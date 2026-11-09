@@ -1,0 +1,7 @@
+# Streamlit Community Cloud entrypoint dependencies.
+# Install the local Portfolio Risk Engine package (src/ layout) and its
+# backend runtime requirements from pyproject.toml.
+-e .
+
+# Install dashboard-specific packages: Streamlit, Plotly, SciPy, and Jinja2.
+-r requirements-v9.txt
