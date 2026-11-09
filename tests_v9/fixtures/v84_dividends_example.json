@@ -1,0 +1,334 @@
+{
+  "version": "8.4",
+  "analysis_type": "cash_distribution_income_and_simulation",
+  "as_of": "2026-11-07",
+  "base_currency": "USD",
+  "method": "Trailing 365 calendar day cash distributions / latest unadjusted close; hypothetical year-end cash/DRIP",
+  "holdings": [
+    {
+      "symbol": "SCHD",
+      "portfolio_weight": 0.4,
+      "market_value_in_base": 10000.0,
+      "status": "evaluated",
+      "reason": null,
+      "quote_currency": "USD",
+      "raw_close_price": 35.16999816894531,
+      "price_date": "2026-11-06",
+      "dividends_per_share_trailing_year": 1.0550000000000002,
+      "dividends_per_share_previous_year": 1.034,
+      "trailing_distribution_yield": 0.029997158229355624,
+      "estimated_annual_gross_income": 299.97158229355625,
+      "estimated_monthly_average_gross_income": 24.997631857796353,
+      "historical_trailing_year_distribution_growth": 0.020309477756286443,
+      "observed_trailing_distribution_events": 4,
+      "history_first_date": "2023-11-06",
+      "history_last_date": "2026-11-06",
+      "source": "Yahoo Finance via yfinance; unadjusted close and cash distributions",
+      "limitations": [
+        "Last-365-day distribution yield is historical, not a forward yield.",
+        "Market value is user entered; fractional shares are inferred from price."
+      ]
+    },
+    {
+      "symbol": "AAPL",
+      "portfolio_weight": 0.4,
+      "market_value_in_base": 10000.0,
+      "status": "evaluated",
+      "reason": null,
+      "quote_currency": "USD",
+      "raw_close_price": 342.3699951171875,
+      "price_date": "2026-11-06",
+      "dividends_per_share_trailing_year": 1.06,
+      "dividends_per_share_previous_year": 1.02,
+      "trailing_distribution_yield": 0.003096065704113995,
+      "estimated_annual_gross_income": 30.96065704113995,
+      "estimated_monthly_average_gross_income": 2.580054753428329,
+      "historical_trailing_year_distribution_growth": 0.03921568627450989,
+      "observed_trailing_distribution_events": 4,
+      "history_first_date": "2023-11-06",
+      "history_last_date": "2026-11-06",
+      "source": "Yahoo Finance via yfinance; unadjusted close and cash distributions",
+      "limitations": [
+        "Last-365-day distribution yield is historical, not a forward yield.",
+        "Market value is user entered; fractional shares are inferred from price."
+      ]
+    },
+    {
+      "symbol": "SPY",
+      "portfolio_weight": 0.2,
+      "market_value_in_base": 5000.0,
+      "status": "evaluated",
+      "reason": null,
+      "quote_currency": "USD",
+      "raw_close_price": 735.2899780273438,
+      "price_date": "2026-11-06",
+      "dividends_per_share_trailing_year": 7.583,
+      "dividends_per_share_previous_year": 7.254,
+      "trailing_distribution_yield": 0.010312938060632734,
+      "estimated_annual_gross_income": 51.56469030316367,
+      "estimated_monthly_average_gross_income": 4.297057525263639,
+      "historical_trailing_year_distribution_growth": 0.0453542872897712,
+      "observed_trailing_distribution_events": 4,
+      "history_first_date": "2023-11-06",
+      "history_last_date": "2026-11-06",
+      "source": "Yahoo Finance via yfinance; unadjusted close and cash distributions",
+      "limitations": [
+        "Last-365-day distribution yield is historical, not a forward yield.",
+        "Market value is user entered; fractional shares are inferred from price."
+      ]
+    }
+  ],
+  "income_summary": {
+    "status": "evaluated",
+    "portfolio_value": 25000.0,
+    "income_covered_value": 25000.0,
+    "income_excluded_value": 0.0,
+    "income_coverage_fraction": 1.0,
+    "estimated_annual_gross_income_covered_holdings": 382.49692963785986,
+    "estimated_monthly_average_gross_income_covered_holdings": 31.87474413648832,
+    "trailing_distribution_yield_on_covered_value": 0.015299877185514395,
+    "known_income_divided_by_total_portfolio_value": 0.015299877185514395,
+    "fully_covered_portfolio_yield": 0.015299877185514395,
+    "note": "Coverage excludes unavailable holdings; known income / total portfolio is a lower-bound contribution, not a complete portfolio yield or a guaranteed income floor."
+  },
+  "simulation": {
+    "status": "illustrative",
+    "modeled_start_value": 25000.0,
+    "unmodeled_start_value": 0.0,
+    "projection_years": 10,
+    "assumed_annual_price_growth": 0.04,
+    "assumed_annual_distribution_per_share_growth": 0.03,
+    "assumed_effective_distribution_tax_drag": 0.0,
+    "annual_results": [
+      {
+        "year": 1,
+        "cash": {
+          "yearly_gross_distributions": 382.49692963785986,
+          "yearly_net_cash_withdrawn": 382.49692963785986,
+          "cumulative_net_cash_withdrawn": 382.49692963785986,
+          "invested_market_value": 26000.0,
+          "total_wealth_including_withdrawn_cash": 26382.49692963786,
+          "next_year_estimated_gross_distribution_income": 393.9718375269957
+        },
+        "drip": {
+          "yearly_gross_distributions": 382.49692963785986,
+          "yearly_net_reinvested_distributions": 382.49692963785986,
+          "cumulative_net_distributions_reinvested": 382.49692963785986,
+          "invested_market_value": 26382.49692963786,
+          "total_wealth": 26382.49692963786,
+          "next_year_estimated_gross_distribution_income": 403.505215166558
+        }
+      },
+      {
+        "year": 2,
+        "cash": {
+          "yearly_gross_distributions": 393.9718375269956,
+          "yearly_net_cash_withdrawn": 393.9718375269956,
+          "cumulative_net_cash_withdrawn": 776.4687671648555,
+          "invested_market_value": 27040.000000000004,
+          "total_wealth_including_withdrawn_cash": 27816.46876716486,
+          "next_year_estimated_gross_distribution_income": 405.79099265280547
+        },
+        "drip": {
+          "yearly_gross_distributions": 403.505215166558,
+          "yearly_net_reinvested_distributions": 403.505215166558,
+          "cumulative_net_distributions_reinvested": 786.0021448044179,
+          "invested_market_value": 27841.302021989934,
+          "total_wealth": 27841.302021989934,
+          "next_year_estimated_gross_distribution_income": 425.6031610086304
+        }
+      },
+      {
+        "year": 3,
+        "cash": {
+          "yearly_gross_distributions": 405.79099265280547,
+          "yearly_net_cash_withdrawn": 405.79099265280547,
+          "cumulative_net_cash_withdrawn": 1182.259759817661,
+          "invested_market_value": 28121.6,
+          "total_wealth_including_withdrawn_cash": 29303.85975981766,
+          "next_year_estimated_gross_distribution_income": 417.9647224323897
+        },
+        "drip": {
+          "yearly_gross_distributions": 425.6031610086305,
+          "yearly_net_reinvested_distributions": 425.6031610086305,
+          "cumulative_net_distributions_reinvested": 1211.6053058130483,
+          "invested_market_value": 29380.557263878163,
+          "total_wealth": 29380.557263878163,
+          "next_year_estimated_gross_distribution_income": 448.8431397952895
+        }
+      },
+      {
+        "year": 4,
+        "cash": {
+          "yearly_gross_distributions": 417.9647224323897,
+          "yearly_net_cash_withdrawn": 417.9647224323897,
+          "cumulative_net_cash_withdrawn": 1600.2244822500506,
+          "invested_market_value": 29246.464000000007,
+          "total_wealth_including_withdrawn_cash": 30846.688482250058,
+          "next_year_estimated_gross_distribution_income": 430.50366410536134
+        },
+        "drip": {
+          "yearly_gross_distributions": 448.8431397952895,
+          "yearly_net_reinvested_distributions": 448.8431397952895,
+          "cumulative_net_distributions_reinvested": 1660.4484456083378,
+          "invested_market_value": 31004.622694228583,
+          "total_wealth": 31004.622694228583,
+          "next_year_estimated_gross_distribution_income": 473.2798238536154
+        }
+      },
+      {
+        "year": 5,
+        "cash": {
+          "yearly_gross_distributions": 430.5036641053614,
+          "yearly_net_cash_withdrawn": 430.5036641053614,
+          "cumulative_net_cash_withdrawn": 2030.728146355412,
+          "invested_market_value": 30416.322560000008,
+          "total_wealth_including_withdrawn_cash": 32447.05070635542,
+          "next_year_estimated_gross_distribution_income": 443.41877402852225
+        },
+        "drip": {
+          "yearly_gross_distributions": 473.2798238536154,
+          "yearly_net_reinvested_distributions": 473.2798238536154,
+          "cumulative_net_distributions_reinvested": 2133.7282694619535,
+          "invested_market_value": 32718.087425851343,
+          "total_wealth": 32718.087425851343,
+          "next_year_estimated_gross_distribution_income": 498.9702767006057
+        }
+      },
+      {
+        "year": 6,
+        "cash": {
+          "yearly_gross_distributions": 443.41877402852225,
+          "yearly_net_cash_withdrawn": 443.41877402852225,
+          "cumulative_net_cash_withdrawn": 2474.1469203839342,
+          "invested_market_value": 31632.97546240001,
+          "total_wealth_including_withdrawn_cash": 34107.12238278394,
+          "next_year_estimated_gross_distribution_income": 456.7213372493779
+        },
+        "drip": {
+          "yearly_gross_distributions": 498.97027670060567,
+          "yearly_net_reinvested_distributions": 498.97027670060567,
+          "cumulative_net_distributions_reinvested": 2632.698546162559,
+          "invested_market_value": 34525.78119958601,
+          "total_wealth": 34525.78119958601,
+          "next_year_estimated_gross_distribution_income": 525.9740478400179
+        }
+      },
+      {
+        "year": 7,
+        "cash": {
+          "yearly_gross_distributions": 456.72133724937794,
+          "yearly_net_cash_withdrawn": 456.72133724937794,
+          "cumulative_net_cash_withdrawn": 2930.868257633312,
+          "invested_market_value": 32898.29448089601,
+          "total_wealth_including_withdrawn_cash": 35829.162738529325,
+          "next_year_estimated_gross_distribution_income": 470.4229773668593
+        },
+        "drip": {
+          "yearly_gross_distributions": 525.974047840018,
+          "yearly_net_reinvested_distributions": 525.974047840018,
+          "cumulative_net_distributions_reinvested": 3158.672594002577,
+          "invested_market_value": 36432.78649540946,
+          "total_wealth": 36432.78649540946,
+          "next_year_estimated_gross_distribution_income": 554.3532709720668
+        }
+      },
+      {
+        "year": 8,
+        "cash": {
+          "yearly_gross_distributions": 470.42297736685936,
+          "yearly_net_cash_withdrawn": 470.42297736685936,
+          "cumulative_net_cash_withdrawn": 3401.2912350001716,
+          "invested_market_value": 34214.22626013184,
+          "total_wealth_including_withdrawn_cash": 37615.517495132015,
+          "next_year_estimated_gross_distribution_income": 484.5356666878651
+        },
+        "drip": {
+          "yearly_gross_distributions": 554.3532709720669,
+          "yearly_net_reinvested_distributions": 554.3532709720669,
+          "cumulative_net_distributions_reinvested": 3713.025864974644,
+          "invested_market_value": 38444.4512261979,
+          "total_wealth": 38444.4512261979,
+          "next_year_estimated_gross_distribution_income": 584.1727657295434
+        }
+      },
+      {
+        "year": 9,
+        "cash": {
+          "yearly_gross_distributions": 484.53566668786516,
+          "yearly_net_cash_withdrawn": 484.53566668786516,
+          "cumulative_net_cash_withdrawn": 3885.8269016880367,
+          "invested_market_value": 35582.79531053713,
+          "total_wealth_including_withdrawn_cash": 39468.622212225164,
+          "next_year_estimated_gross_distribution_income": 499.0717366885011
+        },
+        "drip": {
+          "yearly_gross_distributions": 584.1727657295434,
+          "yearly_net_reinvested_distributions": 584.1727657295434,
+          "cumulative_net_distributions_reinvested": 4297.198630704187,
+          "invested_market_value": 40566.40204097538,
+          "total_wealth": 40566.40204097538,
+          "next_year_estimated_gross_distribution_income": 615.5001430575353
+        }
+      },
+      {
+        "year": 10,
+        "cash": {
+          "yearly_gross_distributions": 499.071736688501,
+          "yearly_net_cash_withdrawn": 499.071736688501,
+          "cumulative_net_cash_withdrawn": 4384.898638376538,
+          "invested_market_value": 37006.10712295861,
+          "total_wealth_including_withdrawn_cash": 41391.005761335146,
+          "next_year_estimated_gross_distribution_income": 514.0438887891561
+        },
+        "drip": {
+          "yearly_gross_distributions": 615.5001430575352,
+          "yearly_net_reinvested_distributions": 615.5001430575352,
+          "cumulative_net_distributions_reinvested": 4912.698773761722,
+          "invested_market_value": 42804.55826567192,
+          "total_wealth": 42804.55826567192,
+          "next_year_estimated_gross_distribution_income": 648.4059143576576
+        }
+      }
+    ],
+    "end_comparison": {
+      "year": 10,
+      "cash": {
+        "yearly_gross_distributions": 499.071736688501,
+        "yearly_net_cash_withdrawn": 499.071736688501,
+        "cumulative_net_cash_withdrawn": 4384.898638376538,
+        "invested_market_value": 37006.10712295861,
+        "total_wealth_including_withdrawn_cash": 41391.005761335146,
+        "next_year_estimated_gross_distribution_income": 514.0438887891561
+      },
+      "drip": {
+        "yearly_gross_distributions": 615.5001430575352,
+        "yearly_net_reinvested_distributions": 615.5001430575352,
+        "cumulative_net_distributions_reinvested": 4912.698773761722,
+        "invested_market_value": 42804.55826567192,
+        "total_wealth": 42804.55826567192,
+        "next_year_estimated_gross_distribution_income": 648.4059143576576
+      }
+    },
+    "limitations": [
+      "Hypothetical deterministic scenarios, NOT forecasts, recommendations or tax calculations.",
+      "Only covered holdings are modeled; no invented income for unavailable tickers.",
+      "Dividend growth and price growth are independent user assumptions, NOT inferred forecasts.",
+      "Future payments occur at year-end and fractional DRIP purchases use the modeled year-end price.",
+      "Cash withdrawals accumulate without interest; total wealth includes invested holdings plus withdrawn net cash.",
+      "Tax drag applies only to modeled distributions; not capital gains, currency changes, tax credits or estate tax.",
+      "No additional deposits, share splits, fees, cash interest, transaction costs or withholding recoveries.",
+      "Historical return calculations elsewhere already embed distributions through adjusted prices; do not add this simulation to historical CAGR."
+    ]
+  },
+  "warnings": [],
+  "data_policy": [
+    "Dividend events may include ETF distributions with mixed income/tax character; not pure taxable dividends.",
+    "Provider dividend data and raw prices may be corrected or unavailable; quote currency must be verified.",
+    "Gross yield is TTM realized payments divided by unadjusted price, not a forecast yield.",
+    "Historical growth compares trailing and preceding 365-day distribution sums where full coverage exists.",
+    "Market values and FX are a user supplied/current snapshot; this is not a historical account ledger.",
+    "Tax setting is user-supplied simplification only; TFSA/RRSP/taxable treatment is not inferred."
+  ],
+  "fx_snapshot": null
+}

@@ -1,0 +1,255 @@
+PORTFOLIO RISK ENGINE — V8 COMPLETION OVERVIEW
+===============================================
+Version: V8.2 — Explainable Portfolio Intelligence & Fundamental Valuation
+Status: COMPLETE for the declared V8 backend scope, with explicit limits.
+Completion evidence: user Windows PowerShell regression suite (431 passed),
+live insights + sector/ETF drill-down + synthetic DCF reports (2026-11-07),
+and live AAPL Yahoo fundamentals/DCF report (2026-11-07).
+V9 remains the planned Streamlit interface and packaging/publication milestone.
+
+PURPOSE
+-------
+V1–V7 provided validated historical prices, CAD/USD conversion, allocation,
+performance, rebalancing/backtesting, risk statistics, walk-forward portfolio
+construction, and conservative current ETF constituent look-through.
+
+V8 adds an accessible, explainable RESEARCH BACKEND that connects those
+measurements: objectively described strengths/weaknesses versus both common
+S&P 500 benchmark proxies, user-chosen what-if allocations and strategy
+priorities, attribution and sector/ETF drill-downs, selected historical
+scenario/sensitivity tools, and individual-stock fundamentals/DCF.
+
+The result is reproducible JSON and command-line analysis. It is not yet a
+graphical product, trading algorithm, investment adviser, paid market-data
+service, or guarantee of improved future portfolio outcomes.
+
+IMPLEMENTED FEATURES
+--------------------
+1. insights: compare a hypothetical portfolio with SPY (cap-weight S&P 500
+   ETF) and RSP (equal-weight S&P 500 ETF) on common observed trading dates,
+   identical reporting currency and consistent returns methodology.
+   Metrics include CAGR, volatility, Sharpe, Sortino, drawdown, Expected
+   Shortfall at 95%, Calmar, benchmark-relative beta, correlation, tracking
+   error and information ratio.
+2. Evidence-based metric diagnostics: positive, negative, neutral, or
+   unavailable per metric and benchmark, with observed values, signed
+   favorable difference, specified materiality threshold, adequate-period
+   checks, metric definition and rationale. Neutral = an evaluated, small
+   difference; unavailable = truly missing/undefined data, NOT neutral.
+   Strengths and weaknesses remain separate instead of a vague net score.
+3. Risk attribution: direct holding weights, standalone volatility,
+   contribution to total portfolio volatility, and share of total risk.
+4. What-if user allocations: reject missing tickers or total weights !=100%;
+   contrast adjusted scenarios with the input under the same historical
+   data and disclose performance/risk tradeoffs.
+5. Candidate strategy selection: input/equal/inverse-volatility/minimum-
+   variance/blended candidates ranked ONLY using the earlier 70% of the
+   shared history according to user's metric priorities. The later 30%
+   holdout is reported separately, including whether each selected
+   objective actually improved, worsened or changed immaterially.
+   A candidate's training success is NOT presented as realized alpha.
+6. Historical-event replay when a complete event window exists; starting-
+   date sensitivity for available 1/3/5-year windows; reproducible
+   5-day-block bootstrap Monte Carlo with uncertainty limitations.
+7. Optional USD versus CAD reporting-currency comparison on aligned FX
+   history. Does not imply investment hedging or revenue-currency exposure.
+8. exposure --drilldown: top holdings per supported ETF, effective whole-
+   portfolio positions, sector contribution by investment, per-company
+   contributors when independently classified, overlap stock contributors,
+   and named/unattributed missing coverage. Optional capped (1..200)
+   best-effort cached Yahoo constituent metadata lookups. Independent fund
+   aggregate sectors are not invented into per-constituent labels.
+9. fundamentals: manually supplied or best-effort Yahoo company statements,
+   internally reconciled free cash flow, net debt, EV, P/E, P/FCF,
+   EV/EBITDA, FCF margins, optional user-selected peer multiples (when 2+
+   usable peers per multiple), and assumption-driven five-year DCF scenarios.
+   Unavailable/negative inputs are not replaced with fake valuations.
+
+DATA/PROVIDER CORRECTIONS DURING V8 DEVELOPMENT
+-----------------------------------------------
+V8.1 fixed a live benchmark metadata failure: if SPY/RSP pricing is present
+but Yahoo omits their trading currency, the specifically known USD trading
+currency can be used, with a provenance warning; conflicting metadata is
+rejected. No such assumption is generalized to other securities.
+
+V8.2 corrected a real data-field mismatch: the internal historical metric
+is annualized_volatility, while several diagnostic/scenario/priority calls
+had been reading volatility. Fix restores truthful volatility alerts, full
+volatility priority scoring and actual holdout verdicts. The optional
+USD/CAD historical-FX adapter may remove a FEW adjacent outside-window
+bars when within seven calendar days of requested bounds, logs removals
+and strictly validates the retained observations. Ordinary stock price
+validation is unchanged.
+
+TEST EVIDENCE AND LIVE REPORTS
+------------------------------
+- User's latest V8.2 Windows suite: 431 tests passed, inherited V1–V7 plus
+  V8 unit, synthetic integration, data-quality and regression tests.
+- insights: v8_insights_report_v82.json. Evaluation interval
+  2022-11-01 to 2026-11-06; 1,008 shared closes/1,007 return periods;
+  base currency USD, annual risk-free input 0.0; daily CONSTANT-MIX
+  hypothetical rebalancing, no modeled trade costs/taxes.
+- equity/ETF drill-down: v8_exposure_drilldown.json (CAD example,
+  QQQ, SCHD, SPMO, XEQT.TO, BTC-USD and GLD).
+- controlled fundamental/peer test: v8_dcf_demo.json (fully SYNTHETIC,
+  not a real stock, two user-selected peers).
+- live stock fundamentals test: v8_AAPL_fundamentals.json, from Yahoo
+  via yfinance; AAPL fiscal period end 2026-09-30, as-of 2026-11-07.
+  The report is valid and internally consistent; underlying figures were
+  not independently compared with official SEC/company filings.
+
+LIVE INSIGHTS NUMBERS — EXAMPLE PORTFOLIO
+-----------------------------------------
+Input: AAPL 35%, MSFT 20%, SPY 30%, GLD 15%. Hypothetical portfolio:
+  Metric                    Portfolio      SPY          RSP
+  CAGR                       23.89%        19.06%       13.29%
+  Annualized volatility      16.91%        15.46%       14.41%
+  Sharpe ratio                1.357         1.210        0.942
+  Sortino ratio               2.116         1.810        1.400
+  Maximum drawdown           19.62%        18.76%       17.81%
+
+Diagnostics: 5 positive, 1 negative, 6 neutral, zero unavailable across
+metric/benchmark assessments. The NEGATIVE is volatility versus RSP:
+portfolio 16.91% vs RSP 14.41%, a 2.49-percentage-point unfavorable
+spread larger than the configured 2-point materiality threshold. Better
+risk-adjusted ratios and worse volatility are BOTH stated explicitly.
+Thresholds are descriptive research settings, not statistical tests.
+
+Actual allocation-risk attribution: AAPL is 35% of capital but about
+47.77% of total volatility risk; MSFT ~23.44%; SPY ~23.46%; GLD ~5.33%.
+The risk shares reconcile to portfolio risk within numerical tolerance.
+
+User 'less_tech' scenario (AAPL 20%, MSFT 10%, SPY 50%, GLD 20%):
+Sharpe 1.467 vs original 1.357, volatility 14.77% vs 16.91%,
+drawdown 16.84% vs 19.62%, CAGR 22.73% vs 23.89%.
+It was evaluated retrospectively on the same history, not on an
+independent future sample and is not a stock-selection recommendation.
+
+HOLDOUT STRATEGY TEST — IMPORTANT NEGATIVE RESULT
+--------------------------------------------------
+Earlier training: 2022-11-01 to 2025-08-25; later holdout:
+2025-08-25 to 2026-11-06. Ten deterministic allocation candidates.
+Priorities: Sharpe 50%, maximum drawdown 25%, volatility 25%.
+Training winner: minimum_variance; approximately AAPL 0%, MSFT 2.49%,
+SPY 44.57%, GLD 52.94%. Its training Sharpe was 2.02 versus input 1.33,
+but on holdout its Sharpe fell to 0.915 versus input 1.440, volatility
+was 17.87% versus input 15.23%, and drawdown was 13.62% versus 11.40%.
+Correct labels: Sharpe NEGATIVE, volatility NEGATIVE, drawdown NEUTRAL
+(unfavorable 2.22-point difference below the 5-point materiality limit).
+The selected candidate explicitly FAILED to improve all chosen objectives.
+One holdout period cannot establish future success or failure reliably.
+
+EXPOSURE DRILL-DOWN LIVE EXAMPLE
+--------------------------------
+25/25 requested largest underlying stock profiles were enriched through
+Yahoo in this run. QQQ, SCHD, SPMO fund holdings and overlap contributors
+were returned; QQQ/SPMO common verified equity overlap lower bound 43.30%
+from distinct dated issuer snapshots. XEQT.TO (32.06% portfolio weight)
+remains unresolved for constituent look-through, NOT removed from capital.
+Portfolio technology sector total: ~21.15%; ~14.59 percentage points
+individually attributed to verified companies; ~6.56 points unattributed.
+Financials: ~2.39% aggregate sector allocation but no individual company
+contributions confirmed among 25 enriched leaders; attributed amount 0,
+not proof that the companies or economic exposure are absent.
+The portfolio's fund-sector and direct-company taxonomies may not align.
+Company domicile != revenue geography; snapshots can be stale.
+
+LIVE APPLE FUNDAMENTALS — ONE VERIFIED PARSER CASE
+--------------------------------------------------
+As-of 2026-11-07; report fiscal end 2026-09-30; USD statements/quotes.
+  Revenue                USD 478.834 billion
+  EBITDA                 USD 171.486 billion
+  Net income             USD 132.175 billion
+  Operating cash flow    USD 145.097 billion
+  Capital expenditures  USD -9.041 billion
+  Free cash flow         USD 136.056 billion (CFO + signed capex)
+  Cash                   USD 36.305 billion
+  Total debt             USD 80.111 billion
+  Net debt               USD 43.806 billion
+  Price                  USD 342.37/share
+  Shares outstanding     14.532182 billion
+  Market cap             approx. USD 4.975 trillion
+  P/E                    37.64x
+  Price/FCF              36.57x
+  EV/EBITDA              29.27x
+  FCF margin             28.41%
+All substantive accounting relationships reconcile. Market cap multiplied
+from rounded displayed share price differs from provider amount by only
+about USD 132 thousand (~0.0000027% of market cap): rounding/precision.
+No field-level warning was emitted. Quote and statement timestamps are not
+independently attested; the data source is unofficial and best-effort.
+
+DCF sensitivities (NOT price targets):
+  Scenario        FCF growth    Discount    Terminal growth    Value/share
+  Conservative       0%          12%           1.5%            $82.09
+  Base               5%          10%           2.0%           $132.39
+  Optimistic        10%           8%           2.5%           $237.71
+All modeled values below the provider's $342.37 reference quote reflect
+these particular hypothetical assumptions, not proof of mispricing or a
+forecast. Base DCF terminal value represents ~69.87% of enterprise value;
+optimistic ~79.45%; valuation is sensitive to terminal assumptions.
+The controlled demo also verified synthetic peer-multiple comparison, but
+REAL multiple-based comparisons with live peers are not yet verified.
+
+USD/CAD AND OTHER LIVE QUALITY RESULTS
+--------------------------------------
+The optional 2022–2026 reporting-currency comparison evaluated successfully:
+portfolio USD CAGR ~23.89%, CAD CAGR ~24.80%. One adjacent out-of-window
+FX bar was excluded and recorded in the report. This is the same securities
+reported in different currencies, NOT simulated currency hedging.
+Historical crisis windows for 2008, 2020 and the full 2022 tightening
+window were correctly labeled unavailable because this test fetched
+history only from 2022-11-01; no invented historical observations.
+Five-year starting-window metrics were likewise unavailable; 1y/3y worked.
+Block-bootstrap Monte Carlo ran 300 paths, 252-period horizon, 5-day blocks,
+seed 42; sampled past returns do not predict future regimes.
+
+USER-FACING SAFETY CONTRACT / KNOWN LIMITATIONS
+-----------------------------------------------
+- V8 uses research/backtest assumptions, not actual portfolio cash flows or
+  realized historical account returns. Daily constant weight implicitly
+  rebalances every session WITHOUT cost, spreads or taxes in this V8 mode.
+- SPY and RSP are investable ETF proxies, NOT fee-free underlying indexes.
+  Same-date comparisons use only their intersection of observed sessions;
+  other historical calendars may differ.
+- Ratio calculations here used 0% annual risk-free rate; this is an input,
+  not a claim that the actual risk-free rate was zero in 2022–2026.
+- Alert sentiment thresholds are transparent MATERIALITY heuristics, not
+  universally accepted quality cutoffs or proof of statistical significance.
+- The candidate search is SMALL, long-only and retrospective; it does not
+  optimize globally. The holdout selection is past-only, but the chosen
+  universe and candidate grid can still be affected by hindsight bias.
+- DCF scenarios are dependent on hypothetical growth/discount rates and
+  historical financial statement availability. They must never be treated
+  as definitive price targets or automatic positive/negative invest calls.
+  Banks and other financial firms may require alternative valuation models.
+- Not verified: live U.S./Canadian stock coverage beyond AAPL for V8
+  fundamentals, live peer-group accuracy, current index constituents,
+  point-in-time archived fundamentals, transaction/broker integrations,
+  fully classified Canadian ETF holdings, bond/derivative specialization.
+- With V7 ETF look-through, not all holdings or constituent sectors are
+  known; unknown portions remain visible, not redistributed or guessed.
+- Third-party data via Yahoo/yfinance is unofficial and for personal
+  research; confirm licensing/attribution before any public hosted app.
+- No GUI in V8: V9 will expose the same core backend via Streamlit.
+
+IMPLEMENTATION / REPRODUCIBILITY
+--------------------------------
+No new paid provider or dependency added. All core features work as Python
+modules and CLI with JSON output and clear warnings.
+
+Final local Windows checks run by user:
+  python -m pytest                         -> 431 passed
+  python -m portfolio_risk insights ...     -> live V8.2 report
+  python -m portfolio_risk exposure ...     -> drill-down report
+  python -m portfolio_risk fundamentals DEMO --file ...
+  python -m portfolio_risk fundamentals AAPL --json --output ...
+
+Guide: docs/V8_TEST_GUIDE.md; V8.2 correction: docs/V8_2_FIX_NOTES.md.
+Version history: V8 base (423 offline tests), V8.1 benchmark-currency
+correction (426), V8.2 objective/diagnostics+FX correction (431).
+
+NEXT: V9 — Streamlit interface, clear tooltips and detailed comparison
+screens, status/quality notices, upload flow and publishable examples.
+This overview certifies the V8 ENGINE within its declared limitations,
+not a finished or licensed public-facing financial-data service.

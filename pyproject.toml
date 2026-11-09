@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portfolio-risk-engine"
+version = "0.8.4"
+description = "Explainable portfolio risk, ETF exposure, validated improvements and optional dividend research"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary — educational project; license to be chosen before public release"}
+authors = [{name = "Portfolio Risk Engine Contributors"}]
+dependencies = [
+    "pandas>=2.1,<3.0",
+    "numpy>=1.26,<3.0",
+    "scipy>=1.11,<2",
+    "yfinance>=0.2.66,<2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1"]
+
+[project.scripts]
+portfolio-risk = "portfolio_risk.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "tests_v9"]
+addopts = ["--import-mode=importlib", "-q"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]

@@ -1,0 +1,6 @@
+symbol,market_value,currency,quote_currency
+IWM,60000.0,USD,USD
+SPY,15000.0,USD,USD
+QQQ,10000.0,USD,USD
+SPMO,10000.0,USD,USD
+GLD,5000.0,USD,USD

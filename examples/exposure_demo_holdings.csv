@@ -1,0 +1,7 @@
+fund_symbol,holding_symbol,weight_pct,asset_class,sector,country,as_of,source
+DEMOA,AAPL,30,equity,Technology,United States,2026-11-01,SYNTHETIC_DEMO_NOT_REAL
+DEMOA,DEMOB,40,etf,,,2026-11-01,SYNTHETIC_DEMO_NOT_REAL
+DEMOA,CASH,5,cash,,,2026-11-01,SYNTHETIC_DEMO_NOT_REAL
+DEMOB,AAPL,20,equity,Technology,United States,2026-11-01,SYNTHETIC_DEMO_NOT_REAL
+DEMOB,MSFT,40,equity,Technology,United States,2026-11-01,SYNTHETIC_DEMO_NOT_REAL
+DEMOB,CASH,10,cash,,,2026-11-01,SYNTHETIC_DEMO_NOT_REAL

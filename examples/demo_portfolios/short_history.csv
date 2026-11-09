@@ -1,0 +1,5 @@
+symbol,market_value,currency,quote_currency
+IBIT,35000.0,USD,USD
+SPY,35000.0,USD,USD
+SCHD,20000.0,USD,USD
+GLD,10000.0,USD,USD

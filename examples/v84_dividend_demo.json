@@ -1,0 +1,102 @@
+{
+  "as_of": "2025-11-07",
+  "snapshots": {
+    "SCHD": {
+      "symbol": "SCHD",
+      "quote_currency": "USD",
+      "close_price": 50.0,
+      "price_date": "2025-11-06",
+      "history_first_date": "2022-10-01",
+      "history_last_date": "2025-11-06",
+      "dividends": [
+        {
+          "date": "2024-02-15",
+          "amount": 0.45
+        },
+        {
+          "date": "2024-05-15",
+          "amount": 0.45
+        },
+        {
+          "date": "2024-08-15",
+          "amount": 0.45
+        },
+        {
+          "date": "2024-11-05",
+          "amount": 0.45
+        },
+        {
+          "date": "2025-02-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-05-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-08-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-11-05",
+          "amount": 0.5
+        }
+      ],
+      "source": "OFFLINE synthetic example (not real ticker data)"
+    },
+    "AAPL": {
+      "symbol": "AAPL",
+      "quote_currency": "USD",
+      "close_price": 100.0,
+      "price_date": "2025-11-06",
+      "history_first_date": "2022-10-01",
+      "history_last_date": "2025-11-06",
+      "dividends": [
+        {
+          "date": "2024-02-15",
+          "amount": 0.4
+        },
+        {
+          "date": "2024-05-15",
+          "amount": 0.4
+        },
+        {
+          "date": "2024-08-15",
+          "amount": 0.4
+        },
+        {
+          "date": "2024-11-05",
+          "amount": 0.4
+        },
+        {
+          "date": "2025-02-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-05-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-08-15",
+          "amount": 0.5
+        },
+        {
+          "date": "2025-11-05",
+          "amount": 0.5
+        }
+      ],
+      "source": "OFFLINE synthetic example (not real ticker data)"
+    },
+    "GLD": {
+      "symbol": "GLD",
+      "quote_currency": "USD",
+      "close_price": 200.0,
+      "price_date": "2025-11-06",
+      "history_first_date": "2022-10-01",
+      "history_last_date": "2025-11-06",
+      "dividends": [],
+      "source": "OFFLINE synthetic example (not real ticker data)"
+    }
+  },
+  "warning": "All dividends, prices and dates are synthetic test fixtures; do not interpret as historical SCHD/AAPL/GLD returns."
+}

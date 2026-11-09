@@ -1,0 +1,242 @@
+symbol,theme,issuer
+SPY,Broad US equities,Multi
+VOO,Broad US equities,Multi
+IVV,Broad US equities,Multi
+VTI,Broad US equities,Multi
+ITOT,Broad US equities,Multi
+SCHB,Broad US equities,Multi
+SPTM,Broad US equities,Multi
+RSP,Broad US equities,Multi
+QQQ,Broad US equities,Multi
+QQQM,Broad US equities,Multi
+DIA,Broad US equities,Multi
+VUG,Broad US equities,Multi
+VTV,Broad US equities,Multi
+VONE,Broad US equities,Multi
+VV,Broad US equities,Multi
+IWM,Mid small and micro cap,Multi
+IJR,Mid small and micro cap,Multi
+VB,Mid small and micro cap,Multi
+SCHA,Mid small and micro cap,Multi
+IWO,Mid small and micro cap,Multi
+IWN,Mid small and micro cap,Multi
+IJH,Mid small and micro cap,Multi
+VO,Mid small and micro cap,Multi
+MDY,Mid small and micro cap,Multi
+VXF,Mid small and micro cap,Multi
+IWC,Mid small and micro cap,Multi
+SLY,Mid small and micro cap,Multi
+SLYV,Mid small and micro cap,Multi
+IJS,Mid small and micro cap,Multi
+VEA,International developed,Multi
+IEFA,International developed,Multi
+EFA,International developed,Multi
+EWG,International developed,Multi
+EWJ,International developed,Multi
+EWU,International developed,Multi
+EWC,International developed,Multi
+EWA,International developed,Multi
+EWL,International developed,Multi
+EWQ,International developed,Multi
+EWT,International developed,Multi
+EWS,International developed,Multi
+EWH,International developed,Multi
+VPL,International developed,Multi
+SCHF,International developed,Multi
+SPDW,International developed,Multi
+VGK,International developed,Multi
+VEU,International developed,Multi
+VWO,Emerging and global,Multi
+IEMG,Emerging and global,Multi
+EEM,Emerging and global,Multi
+EEMV,Emerging and global,Multi
+SPEM,Emerging and global,Multi
+SCHE,Emerging and global,Multi
+EWX,Emerging and global,Multi
+EWZ,Emerging and global,Multi
+INDA,Emerging and global,Multi
+MCHI,Emerging and global,Multi
+FXI,Emerging and global,Multi
+KWEB,Emerging and global,Multi
+ACWI,Emerging and global,Multi
+VT,Emerging and global,Multi
+VXUS,Emerging and global,Multi
+IXUS,Emerging and global,Multi
+VSS,Emerging and global,Multi
+XLK,US sector and industry,Multi
+XLF,US sector and industry,Multi
+XLE,US sector and industry,Multi
+XLY,US sector and industry,Multi
+XLP,US sector and industry,Multi
+XLV,US sector and industry,Multi
+XLI,US sector and industry,Multi
+XLU,US sector and industry,Multi
+XLB,US sector and industry,Multi
+XLC,US sector and industry,Multi
+XLRE,US sector and industry,Multi
+VGT,US sector and industry,Multi
+VHT,US sector and industry,Multi
+VFH,US sector and industry,Multi
+XBI,US sector and industry,Multi
+IBB,US sector and industry,Multi
+SOXX,US sector and industry,Multi
+SMH,US sector and industry,Multi
+IGV,US sector and industry,Multi
+ITA,US sector and industry,Multi
+KRE,US sector and industry,Multi
+XOP,US sector and industry,Multi
+XRT,US sector and industry,Multi
+IYT,US sector and industry,Multi
+XHB,US sector and industry,Multi
+MTUM,US factors and styles,Multi
+QUAL,US factors and styles,Multi
+USMV,US factors and styles,Multi
+SPLV,US factors and styles,Multi
+VLUE,US factors and styles,Multi
+SIZE,US factors and styles,Multi
+DGRW,US factors and styles,Multi
+DGRO,US factors and styles,Multi
+SPHQ,US factors and styles,Multi
+AVUV,US factors and styles,Multi
+DFAX,US factors and styles,Multi
+IWF,US factors and styles,Multi
+IWD,US factors and styles,Multi
+IVE,US factors and styles,Multi
+SCHG,US factors and styles,Multi
+SCHV,US factors and styles,Multi
+VBR,US factors and styles,Multi
+RPV,US factors and styles,Multi
+IUSV,US factors and styles,Multi
+VFMO,US factors and styles,Multi
+SCHD,Dividend and income,Multi
+VYM,Dividend and income,Multi
+HDV,Dividend and income,Multi
+SDY,Dividend and income,Multi
+NOBL,Dividend and income,Multi
+DVY,Dividend and income,Multi
+SPYD,Dividend and income,Multi
+JEPI,Dividend and income,Multi
+JEPQ,Dividend and income,Multi
+DIVO,Dividend and income,Multi
+QYLD,Dividend and income,Multi
+XYLD,Dividend and income,Multi
+RYLD,Dividend and income,Multi
+VIG,Dividend and income,Multi
+BND,Treasury and bond,Multi
+AGG,Treasury and bond,Multi
+BNDX,Treasury and bond,Multi
+BNDW,Treasury and bond,Multi
+TLT,Treasury and bond,Multi
+IEF,Treasury and bond,Multi
+SHY,Treasury and bond,Multi
+SGOV,Treasury and bond,Multi
+BIL,Treasury and bond,Multi
+SHV,Treasury and bond,Multi
+VGSH,Treasury and bond,Multi
+VGIT,Treasury and bond,Multi
+VGLT,Treasury and bond,Multi
+LQD,Treasury and bond,Multi
+HYG,Treasury and bond,Multi
+JNK,Treasury and bond,Multi
+MUB,Treasury and bond,Multi
+TIP,Treasury and bond,Multi
+VTIP,Treasury and bond,Multi
+SCHZ,Treasury and bond,Multi
+IUSB,Treasury and bond,Multi
+VCIT,Treasury and bond,Multi
+VCSH,Treasury and bond,Multi
+EDV,Treasury and bond,Multi
+TIPS,Treasury and bond,Multi
+GLD,Commodity and metals,Multi
+IAU,Commodity and metals,Multi
+SLV,Commodity and metals,Multi
+SIVR,Commodity and metals,Multi
+PPLT,Commodity and metals,Multi
+PALL,Commodity and metals,Multi
+USO,Commodity and metals,Multi
+UNG,Commodity and metals,Multi
+DBC,Commodity and metals,Multi
+PDBC,Commodity and metals,Multi
+DBA,Commodity and metals,Multi
+CPER,Commodity and metals,Multi
+SGOL,Commodity and metals,Multi
+TQQQ,Leveraged and inverse,Multi
+SQQQ,Leveraged and inverse,Multi
+UPRO,Leveraged and inverse,Multi
+SPXU,Leveraged and inverse,Multi
+SPXL,Leveraged and inverse,Multi
+SPXS,Leveraged and inverse,Multi
+TNA,Leveraged and inverse,Multi
+TZA,Leveraged and inverse,Multi
+SOXL,Leveraged and inverse,Multi
+SOXS,Leveraged and inverse,Multi
+LABU,Leveraged and inverse,Multi
+LABD,Leveraged and inverse,Multi
+TECL,Leveraged and inverse,Multi
+TECS,Leveraged and inverse,Multi
+TMF,Leveraged and inverse,Multi
+TMV,Leveraged and inverse,Multi
+SDS,Leveraged and inverse,Multi
+SH,Leveraged and inverse,Multi
+ARKK,Thematic and technology,Multi
+ARKG,Thematic and technology,Multi
+ARKW,Thematic and technology,Multi
+ARKF,Thematic and technology,Multi
+ARKQ,Thematic and technology,Multi
+BOTZ,Thematic and technology,Multi
+ROBO,Thematic and technology,Multi
+AIQ,Thematic and technology,Multi
+HACK,Thematic and technology,Multi
+CIBR,Thematic and technology,Multi
+BUG,Thematic and technology,Multi
+SKYY,Thematic and technology,Multi
+CLOU,Thematic and technology,Multi
+ICLN,Thematic and technology,Multi
+TAN,Thematic and technology,Multi
+LIT,Thematic and technology,Multi
+DRIV,Thematic and technology,Multi
+REMX,Thematic and technology,Multi
+URA,Thematic and technology,Multi
+ITB,Thematic and technology,Multi
+IBIT,Crypto exchange traded,Multi
+FBTC,Crypto exchange traded,Multi
+BITB,Crypto exchange traded,Multi
+ARKB,Crypto exchange traded,Multi
+HODL,Crypto exchange traded,Multi
+EZBC,Crypto exchange traded,Multi
+GBTC,Crypto exchange traded,Multi
+ETHA,Crypto exchange traded,Multi
+FETH,Crypto exchange traded,Multi
+ETHW,Crypto exchange traded,Multi
+BITO,Crypto exchange traded,Multi
+BTF,Crypto exchange traded,Multi
+JPST,Active and alternatives,Multi
+JAAA,Active and alternatives,Multi
+MINT,Active and alternatives,Multi
+PULS,Active and alternatives,Multi
+BKLN,Active and alternatives,Multi
+SRLN,Active and alternatives,Multi
+COWZ,Active and alternatives,Multi
+CALF,Active and alternatives,Multi
+MOAT,Active and alternatives,Multi
+GUNR,Active and alternatives,Multi
+GDX,Active and alternatives,Multi
+GDXJ,Active and alternatives,Multi
+RINF,Active and alternatives,Multi
+DBMF,Active and alternatives,Multi
+KMLM,Active and alternatives,Multi
+CTA,Active and alternatives,Multi
+EZA,Single country and niche,Multi
+ECH,Single country and niche,Multi
+EIDO,Single country and niche,Multi
+EPHE,Single country and niche,Multi
+EPU,Single country and niche,Multi
+EIS,Single country and niche,Multi
+EWI,Single country and niche,Multi
+EWP,Single country and niche,Multi
+EWD,Single country and niche,Multi
+EWN,Single country and niche,Multi
+EIRL,Single country and niche,Multi
+TUR,Single country and niche,Multi
+GREK,Single country and niche,Multi
+ARGT,Single country and niche,Multi

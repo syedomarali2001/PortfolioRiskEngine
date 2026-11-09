@@ -1,0 +1,6 @@
+symbol,market_value,currency,quote_currency
+SCHD,50000.0,USD,USD
+VYM,20000.0,USD,USD
+DGRO,15000.0,USD,USD
+SPY,10000.0,USD,USD
+MSFT,5000.0,USD,USD

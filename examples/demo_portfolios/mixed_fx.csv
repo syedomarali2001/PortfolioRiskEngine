@@ -1,0 +1,6 @@
+symbol,market_value,currency,quote_currency
+XEQT.TO,30000.0,CAD,CAD
+SHOP.TO,10000.0,CAD,CAD
+SPY,30000.0,CAD,USD
+SCHD,20000.0,USD,USD
+GLD,10000.0,USD,USD

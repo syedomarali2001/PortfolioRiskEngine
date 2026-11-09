@@ -1,0 +1,6 @@
+symbol,market_value,currency,quote_currency
+SPY,30000.0,USD,USD
+QQQ,15000.0,USD,USD
+SCHD,20000.0,USD,USD
+IEF,20000.0,USD,USD
+GLD,15000.0,USD,USD

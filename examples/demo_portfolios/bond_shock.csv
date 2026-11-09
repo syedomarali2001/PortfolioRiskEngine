@@ -1,0 +1,5 @@
+symbol,market_value,currency,quote_currency
+TLT,65000.0,USD,USD
+IEF,20000.0,USD,USD
+SPY,10000.0,USD,USD
+GLD,5000.0,USD,USD

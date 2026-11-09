@@ -1,0 +1,5 @@
+symbol,market_value,currency,quote_currency
+SPY,40000.0,USD,USD
+VOO,30000.0,USD,USD
+IVV,20000.0,USD,USD
+AAPL,10000.0,USD,USD

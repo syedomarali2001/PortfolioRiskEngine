@@ -1,0 +1,36 @@
+# Credentials / financial holdings — never commit real personal portfolios
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+
+# Caches, downloaded market data, local reports
+/data/cache/
+/data/downloads/
+/data/reports/
+/outputs/
+/portfolio.csv
+/my_portfolio.*
+*private*portfolio*.csv
+
+# Python / virtual environment
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

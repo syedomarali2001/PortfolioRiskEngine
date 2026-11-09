@@ -1,0 +1,112 @@
+PORTFOLIO RISK ENGINE — V3 FINAL OVERVIEW
+=========================================
+Version: V3 — Performance Analytics
+Status: COMPLETE (local verification reported November 7, 2026)
+
+1. PURPOSE
+----------
+Extend the V1 market-data foundation and V2 portfolio accounting/FX layer with
+historical performance and risk-adjusted performance statistics. Results are
+accessible through the command-line application, without requiring a GUI.
+
+2. IMPLEMENTED CAPABILITIES
+---------------------------
+- Historical adjusted-price performance for a user-supplied portfolio.
+- Currency normalization into a selected base currency (e.g., CAD), using
+  historical FX observations rather than treating USD and CAD prices alike.
+- Hypothetical constant-mix portfolio return series using snapshot weights.
+- Cumulative return and compound annual growth rate (CAGR).
+- Annualized return volatility, Sharpe ratio, and Sortino ratio.
+- Maximum drawdown and best/worst observed common-date return periods.
+- Per-asset performance summaries and asset-return correlation matrix.
+- Optional benchmark comparison, including benchmark CAGR, volatility,
+  maximum drawdown, portfolio beta, tracking error, and information ratio.
+- CLI performance command and documented sample portfolio input.
+- Offline regression and numerical tests; prior V1/V2 functionality retained.
+
+3. SOFTWARE ORGANIZATION
+------------------------
+Quantitative formulas and time-series analysis are kept separate from data
+retrieval, FX handling, and CLI presentation. The central performance logic
+can be reused later by backtesting, risk models, and the planned dashboard.
+
+4. VERIFIED LOCAL RESULTS
+-------------------------
+The user ran the live performance CLI, benchmark CLI, and automated test suite.
+Automated tests: 106 PASSED.
+
+Command (portfolio):
+  python -m portfolio_risk performance examples\sample_portfolio_v3.csv --base CAD --start 2024-01-01 --risk-free 3
+
+Command (with benchmark):
+  python -m portfolio_risk performance examples\sample_portfolio_v3.csv --base CAD --start 2024-01-01 --risk-free 3 --benchmark SPY --benchmark-currency USD
+
+Illustrative six-asset portfolio: XEQT.TO, QQQ, SCHD, SPMO, BTC-USD, GLD.
+Common closing dates: 2024-01-02 through 2026-11-06.
+Observations: 702; return periods: 701.
+Base currency: CAD. Assumed annual risk-free rate: 3.00%.
+
+Hypothetical portfolio:
+  Cumulative return:             +83.20%
+  CAGR:                           23.72%
+  Annualized volatility:          15.57%
+  Sharpe ratio:                    1.286
+  Sortino ratio:                   1.897
+  Maximum drawdown:             -16.38%
+  Worst common-date return:      -5.50%
+  Best common-date return:       +8.42%
+
+SPY benchmark (same analysis period and CAD base):
+  CAGR:                           20.52%
+  Annualized volatility:          16.63%
+  Maximum drawdown:             -19.41%
+  Portfolio beta to SPY:           0.878
+  Tracking error:                  5.76%
+  Information ratio:               0.435
+
+The portfolio's observed annualized return exceeded SPY's by 3.20 percentage
+points within this sample. This is descriptive historical performance, not an
+out-of-sample strategy validation or a forecast of future outperformance.
+
+5. LIMITATIONS AND ASSUMPTIONS
+------------------------------
+- V3 computes a hypothetical DAILY CONSTANT-MIX return series using present
+  allocation weights, not the account's actual transactions or cash flows.
+- Daily constant-mix implies mathematical daily restoration of weights; V3
+  has no trades, transaction costs, slippage, taxes, or feasible execution.
+- All assets are compared on common closing dates; non-overlapping sessions
+  are excluded. In the observed sample, BTC-USD had 1,042 observed dates but
+  only 702 common dates with the other investments.
+- Metrics depend on the selected historical window, provider data, adjusted
+  prices, exchange rates, and assumed risk-free rate.
+- Current weights applied retrospectively do not establish that these weights
+  were chosen without hindsight, or that the strategy will work in future.
+- Actual tradeable strategy simulation, transaction costs, and scheduled
+  rebalancing belong to V4.
+- Model-based risk estimates and VaR backtesting belong to V5.
+
+6. VERSION ACCEPTANCE CHECKLIST
+-------------------------------
+[PASS] Existing V1/V2 test suite retained and expanded.
+[PASS] Total of 106 automated tests passed locally.
+[PASS] Historical portfolio performance command completed successfully.
+[PASS] Optional SPY benchmark command completed successfully.
+[PASS] Historical FX and mixed-calendar processing produced usable results.
+[PASS] Console output explicitly labels the portfolio as hypothetical.
+
+V3 is COMPLETE based on the submitted console results. No GitHub publication
+is needed until the final V9 release.
+
+7. NEXT VERSION
+---------------
+V4 — Historical Backtesting: formal buy-and-hold and rebalanced portfolio
+simulations; dated trading decisions, transaction costs, benchmark comparison,
+and validation of portfolio accounting through time. Retain the standalone
+quantitative engine so a GUI can be added in V9 without rewrites.
+
+BACKUP PROCEDURE
+----------------
+Place this file under docs/V3_OVERVIEW.txt in the active project, then make an
+unchanged milestone copy in PortfolioRiskEngine_Backups/V3/. The backup can
+exclude .venv/, __pycache__/, .pytest_cache/, and downloaded caches; do not
+remove those from the active working folder solely for backup purposes.

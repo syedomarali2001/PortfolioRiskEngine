@@ -1,0 +1,6 @@
+symbol,market_value,currency,quote_currency
+NVDA,90000.0,USD,USD
+AAPL,4000.0,USD,USD
+SPY,3000.0,USD,USD
+MSFT,2000.0,USD,USD
+GLD,1000.0,USD,USD

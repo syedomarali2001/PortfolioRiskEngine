@@ -1,0 +1,5 @@
+symbol,market_value,currency,quote_currency
+AAPL,25000.0,USD,USD
+MSFT,25000.0,USD,USD
+NVDA,25000.0,USD,USD
+QQQ,25000.0,USD,USD

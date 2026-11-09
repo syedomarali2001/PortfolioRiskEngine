@@ -1,0 +1,7 @@
+{
+  "symbol":"PEER1", "source":"SYNTHETIC TEACHING DATA", "period_end":"2025-12-31",
+  "statement_currency":"USD", "quote_currency":"USD",
+  "revenue":2500000000, "net_income":250000000, "ebitda":400000000,
+  "free_cash_flow":270000000, "cash":420000000, "total_debt":600000000,
+  "shares_outstanding":100000000, "price":43.0, "market_cap":4300000000
+}

@@ -1,0 +1,111 @@
+symbol,market,group
+AAPL,US_STOCK,US mega technology
+MSFT,US_STOCK,US mega technology
+NVDA,US_STOCK,US mega technology
+AMZN,US_STOCK,US mega technology
+GOOGL,US_STOCK,US mega technology
+META,US_STOCK,US mega technology
+TSLA,US_STOCK,US mega technology
+AVGO,US_STOCK,US mega technology
+AMD,US_STOCK,US mega technology
+INTC,US_STOCK,US mega technology
+MU,US_STOCK,US mega technology
+QCOM,US_STOCK,US mega technology
+CRM,US_STOCK,US mega technology
+ORCL,US_STOCK,US mega technology
+ADBE,US_STOCK,US mega technology
+JPM,US_STOCK,US banks finance
+BAC,US_STOCK,US banks finance
+WFC,US_STOCK,US banks finance
+GS,US_STOCK,US banks finance
+MS,US_STOCK,US banks finance
+V,US_STOCK,US banks finance
+MA,US_STOCK,US banks finance
+BLK,US_STOCK,US banks finance
+SCHW,US_STOCK,US banks finance
+BRK-B,US_STOCK,US banks finance
+JNJ,US_STOCK,US healthcare
+PFE,US_STOCK,US healthcare
+MRK,US_STOCK,US healthcare
+ABBV,US_STOCK,US healthcare
+UNH,US_STOCK,US healthcare
+AMGN,US_STOCK,US healthcare
+LLY,US_STOCK,US healthcare
+GILD,US_STOCK,US healthcare
+ISRG,US_STOCK,US healthcare
+WMT,US_STOCK,US consumer
+COST,US_STOCK,US consumer
+HD,US_STOCK,US consumer
+LOW,US_STOCK,US consumer
+KO,US_STOCK,US consumer
+PEP,US_STOCK,US consumer
+MCD,US_STOCK,US consumer
+NKE,US_STOCK,US consumer
+SBUX,US_STOCK,US consumer
+PG,US_STOCK,US consumer
+GE,US_STOCK,US industrial
+CAT,US_STOCK,US industrial
+DE,US_STOCK,US industrial
+RTX,US_STOCK,US industrial
+BA,US_STOCK,US industrial
+HON,US_STOCK,US industrial
+LMT,US_STOCK,US industrial
+UNP,US_STOCK,US industrial
+XOM,US_STOCK,US energy
+CVX,US_STOCK,US energy
+COP,US_STOCK,US energy
+SLB,US_STOCK,US energy
+OXY,US_STOCK,US energy
+EOG,US_STOCK,US energy
+NEE,US_STOCK,US utilities
+DUK,US_STOCK,US utilities
+SO,US_STOCK,US utilities
+EXC,US_STOCK,US utilities
+AEP,US_STOCK,US utilities
+PLD,US_STOCK,US REITs
+AMT,US_STOCK,US REITs
+EQIX,US_STOCK,US REITs
+O,US_STOCK,US REITs
+T,US_STOCK,US telecom and media
+VZ,US_STOCK,US telecom and media
+DIS,US_STOCK,US telecom and media
+NFLX,US_STOCK,US telecom and media
+TSM,US_STOCK,US-listed foreign companies ADR
+NVO,US_STOCK,US-listed foreign companies ADR
+BABA,US_STOCK,US-listed foreign companies ADR
+ASML,US_STOCK,US-listed foreign companies ADR
+RY.TO,CAD_STOCK,Canada banks and insurers
+TD.TO,CAD_STOCK,Canada banks and insurers
+BMO.TO,CAD_STOCK,Canada banks and insurers
+BNS.TO,CAD_STOCK,Canada banks and insurers
+CM.TO,CAD_STOCK,Canada banks and insurers
+NA.TO,CAD_STOCK,Canada banks and insurers
+MFC.TO,CAD_STOCK,Canada banks and insurers
+SLF.TO,CAD_STOCK,Canada banks and insurers
+GWO.TO,CAD_STOCK,Canada banks and insurers
+SHOP.TO,CAD_STOCK,Canada technology and retail
+CSU.TO,CAD_STOCK,Canada technology and retail
+OTEX.TO,CAD_STOCK,Canada technology and retail
+GIB-A.TO,CAD_STOCK,Canada technology and retail
+DOL.TO,CAD_STOCK,Canada technology and retail
+ATD.TO,CAD_STOCK,Canada technology and retail
+CNR.TO,CAD_STOCK,Canada industrial
+CP.TO,CAD_STOCK,Canada industrial
+WCN.TO,CAD_STOCK,Canada industrial
+TRI.TO,CAD_STOCK,Canada industrial
+TFII.TO,CAD_STOCK,Canada industrial
+ENB.TO,CAD_STOCK,Canada energy
+TRP.TO,CAD_STOCK,Canada energy
+SU.TO,CAD_STOCK,Canada energy
+CNQ.TO,CAD_STOCK,Canada energy
+CVE.TO,CAD_STOCK,Canada energy
+BCE.TO,CAD_STOCK,Canada telecom utilities
+T.TO,CAD_STOCK,Canada telecom utilities
+RCI-B.TO,CAD_STOCK,Canada telecom utilities
+FTS.TO,CAD_STOCK,Canada telecom utilities
+EMA.TO,CAD_STOCK,Canada telecom utilities
+BAM.TO,CAD_STOCK,Canada mining and investments
+BN.TO,CAD_STOCK,Canada mining and investments
+WPM.TO,CAD_STOCK,Canada mining and investments
+AEM.TO,CAD_STOCK,Canada mining and investments
+ABX.TO,CAD_STOCK,Canada mining and investments

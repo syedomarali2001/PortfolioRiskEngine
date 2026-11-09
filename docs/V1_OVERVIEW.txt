@@ -1,0 +1,91 @@
+PORTFOLIO RISK ENGINE — V1 FINAL OVERVIEW
+========================================
+Milestone: Foundation & Market Data Ingestion
+Status: COMPLETE — verified locally on Windows, November 7, 2026
+
+PROJECT PURPOSE
+---------------
+Build a modular, testable Python foundation for a multi-asset portfolio
+construction, risk analysis, and historical backtesting application.
+V1 establishes data ingestion and validation only; it deliberately does not
+calculate portfolio weights, portfolio returns, or risk statistics yet.
+
+IMPLEMENTED IN V1
+-----------------
+1. A Python package with separate modules for models, file input, market-data
+   providers, quality checks, FX mapping, disk caching, service logic, and CLI.
+2. CSV/TXT/TSV imports using symbol, market_value, and currency fields.
+   CAD and USD input values are supported; invalid amounts, malformed records,
+   and duplicate symbols are rejected rather than silently accepted.
+3. A replaceable market-data provider interface, with an initial Yahoo Finance
+   implementation for historical adjusted closing prices.
+4. CAD/USD exchange-rate retrieval via USDCAD=X, without converting amounts yet.
+5. Historical price data-quality checks, warning metadata, and date handling.
+6. Local on-disk caching so repeated data requests can reuse prior responses.
+7. CLI commands for portfolio validation and market-data fetching.
+8. Offline automated tests and package/project setup.
+
+LOCAL VERIFICATION — PASSED
+---------------------------
+Environment: Windows PowerShell, project-specific .venv
+
+[PASS] Package/development dependencies installed successfully.
+[PASS] 39 of 39 automated tests passed (1.95 seconds in the captured run).
+[PASS] Example CSV validated with 6 distinct holdings:
+       XEQT.TO (CAD), QQQ, SCHD, SPMO, BTC-USD, GLD (USD).
+[PASS] Initial live fetch returned all 6 holding symbols and the CAD/USD FX
+       symbol USDCAD=X: 7/7 histories fetched and validated.
+[PASS] Second identical fetch returned [CACHE] for all 7 symbols.
+[PASS] Different trading calendars observed as expected: cryptocurrency had
+       weekend observations, while listed equities/ETFs had market-day data.
+
+Observed provider metadata: quote=UNKNOWN was reported. This is not a price
+fetch error, but currency metadata must not be guessed; V2 will need explicit
+currency validation and conversion rules.
+
+COMMANDS
+--------
+From the project root on Windows PowerShell:
+
+  .\.venv\Scripts\python.exe -m pytest
+  .\.venv\Scripts\python.exe -m portfolio_risk validate examples\sample_portfolio.csv
+  .\.venv\Scripts\python.exe -m portfolio_risk fetch examples\sample_portfolio.csv --include-fx
+
+The second fetch normally uses cached responses until the configured cache
+expires. Live-data success depends on the external provider being available.
+
+IMPORTANT DATA CONTRACTS AND LIMITATIONS
+----------------------------------------
+- market_value is an entered current holding value in the indicated currency;
+  it is not a share count, purchase price, or historical transaction record.
+- V1 does not add CAD and USD numbers together or derive portfolio weights.
+- Adjusted price history is sourced from a third party and may change later.
+- Yahoo symbol coverage is broad but not universal; symbol and data availability
+  are provider-dependent.
+- Crypto and exchange-listed securities have different trading calendars.
+- Currency and corporate-action assumptions will be made explicit in later
+  versions before calculating historical multi-asset returns.
+- The first version has no portfolio-risk outputs, strategy simulation,
+  optimization, security valuation, or GUI.
+- External market data are research inputs; provider terms and redistribution
+  rights must be reviewed before public datasets or paid services are offered.
+
+V1 COMPLETION DECISION
+----------------------
+The planned V1 acceptance checks have passed in the user's local environment.
+The data foundation is adequate to move to V2. This does not certify that every
+supported ticker, date range, or external API condition has been tested.
+
+NEXT VERSION — V2
+-----------------
+Portfolio accounting and CAD/USD normalization: convert each holding into a
+common base currency, calculate total portfolio value and weights, define FX
+alignment rules for dates, and verify numerical results independently.
+
+WORKFLOW
+--------
+Save one immutable local V1 snapshot (source, tests, sample inputs and this
+overview). Exclude .venv, __pycache__, .pytest_cache, and disposable market-data
+caches from the snapshot if convenient. Continue V2 in the existing working
+PortfolioRiskEngine folder to avoid breaking environment paths. GitHub
+publication and a consolidated public README can wait until V9.

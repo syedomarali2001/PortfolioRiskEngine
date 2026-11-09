@@ -1,0 +1,220 @@
+PORTFOLIO RISK ENGINE — V7 COMPLETION OVERVIEW
+===============================================
+Version: V7.3 — ETF Exposure, Market Coverage and Support Guardrails
+Live verification: user's U.S. ETF and portfolio-exposure JSON reports,
+2026-11-07; 380 deterministic regression tests also passed in the project
+working copy on 2026-11-07.
+Status: COMPLETE for V7's declared, limited scope. Market-wide completeness,
+all ETF constituents, and historical as-of holdings are NOT claimed.
+Public release remains deferred until the planned V9 interface/polish.
+
+PURPOSE
+-------
+V1–V6 established historical prices and caching, CAD/USD valuation,
+portfolio weights, performance, backtesting, VaR/Expected Shortfall, stress
+tests, and strategy construction. V7 adds *current/last-reported* portfolio
+exposure intelligence and transparent data-coverage limits. The goal is
+honest analysis of supported investment types rather than false full-market
+coverage.
+
+DELIVERED THROUGH V7.0–V7.3
+--------------------------
+1. Current portfolio look-through using direct securities and fund
+   constituents, with identified/unidentified NAV shares, top underlying
+   positions, sector/country/asset-class composition, and overlap lower bounds.
+   Includes synthetic/manual constituent inputs, nested holdings resolution,
+   dated source disclosures and quality warnings.
+2. Independent benchmark ETF proxy regressions for historical portfolio
+   returns (SPY/MTUM examples). These are descriptive correlations/betas,
+   not orthogonal factor regressions or demonstrated trading alpha.
+3. Automatic U.S. ETF holdings retrieval via the free TickerInside API,
+   without hardcoding individual issuers; source attribution, disclosure
+   dates, weight reconciliation and optional 24-hour request caching.
+4. Yahoo-backed market-pricing checks and automatic company classifications
+   for U.S. and Canadian direct stocks: sector, industry, company location,
+   listing exchange, trading currency, security type and company name.
+5. Diagnostic commands for a 30-asset mixed universe, 241-fund U.S. ETF
+   universe, 110-stock U.S./Canadian universe, and combined capability JSON.
+6. V7.3 safety contract: `supported`, `partial`, `price_only`, `unverified`;
+   optional `--strict-exposure` rejection of insufficient detailed exposure.
+   `price_only` DOES NOT imply missing historical price data.
+7. Equity-validation improvement: issuer-classified stock funds may now
+   qualify even when the provider's generic holdings-kind label is unknown,
+   but only with corroborating contemporaneous provider classification,
+   stock count, sector coverage and other-fund screening. Cash is separated;
+   futures, swaps, bonds and unverified holdings are excluded from stock
+   overlap. Sector taxonomies are normalized across direct stocks/funds.
+
+AUTOMATED REGRESSION EVIDENCE
+-----------------------------
+380 tests collected and passed locally in the V7.3 working copy, including
+V1–V6 and V7 tests. This is deterministic unit/integration-test coverage,
+not a substitute for live data or for testing every exchange-listed asset.
+The user also supplied two independently generated live V7.3 JSON reports:
+  us_etf_v73_report.json
+  v73_exposure.json
+The strict-mode CLI rejection demonstration was not attached as a live run;
+its behavior is covered by the deterministic support tests.
+
+BROAD U.S. ETF LIVE AUDIT — 241 CURATED FUNDS
+---------------------------------------------
+Measurement                              V7.2       V7.3
+Fund tickers indexed                     239/241    239/241
+Funds with dated holdings                 205/241    210/241
+>=95% identified fund weight             164/241    169/241
+With sector breakdown                    151/241    156/241
+With country breakdown                   152/241    157/241
+Safe equity look-through                  63/241    116/241
+Provider parsing errors                   11         6
+
+The strict safe-equity result improved by 53 funds (+84.1% compared with
+63), while the audit deliberately includes non-equity ETPs. Within NINE
+preselected equity-oriented ETF theme groups (157 funds):
+  156/157 indexed (99.4%)
+  150/157 with dated holdings (95.5%)
+  139/157 with >=95% fund-weight coverage (88.5%)
+  109/157 passed strict safe-equity validation (69.4%)
+The theme groups contain some funds with option strategies or other
+non-equity positions; do not treat this denominator as a homogeneous set of
+plain-vanilla equity funds or a random sample of the U.S. market.
+
+Key positive cases: SPY, IVV, ITOT, IWM and many other issuer-file ETFs
+now qualify using additional provider evidence. QQQ, SCHD, SPMO, VTI, VOO,
+VGT and various Vanguard/Schwab equity funds qualify through explicit
+stock holdings where weight/date constraints allow. Source dates differ.
+
+Known unresolved cases:
+- Six funds still returned provider parsing errors involving unusual
+  futures-linked/signed positions: XLK, XLE, XLI, XLC, XOP, RYLD. Do NOT
+  claim they provide validated look-through in this version.
+- Some international, emerging-market, niche and thematic issuer files
+  remain conservatively `unverified` / `price_only` despite detailed
+  holdings being present, because stock-only evidence is insufficient.
+- 50 of the 241 funds have partial identified weights under audit rules;
+  derivative, bond, active and other non-equity structures vary widely.
+- Some otherwise eligible equity fund holdings are older than 120 days;
+  being equity-validated does not mean the data are current.
+- Provider-reported index breadth (94.1% of U.S. ETFs) is NOT equivalent to
+  complete validated constituent look-through, and is not independently
+  verified for every listed ticker.
+
+STOCK AND MIXED-MARKET EVIDENCE (V7.2 BASELINE RETAINED IN V7.3)
+-----------------------------------------------------------------
+110/110 deliberately selected U.S./Canadian direct stocks returned recognized
+EQUITY type, company name, sector, industry, reported company country,
+listing exchange and trading currency: 75/75 U.S. and 35/35 Canadian.
+30/30 selected mixed-market tickers returned recent historical prices:
+five each of U.S. ETFs, Canadian ETFs, U.S. stocks, Canadian stocks,
+commodity ETPs, and cryptocurrency USD pairs. These were short recent price
+windows, NOT validation of multi-decade historical price availability.
+Canadian ETF constituents were 0/5 via this U.S.-focused provider.
+Physical bullion ETPs (e.g. GLD/SLV/IAU/PPLT) provided direct commodity
+identification in the selected sample; USO futures-based exposure did not.
+Direct BTC/ETH/SOL/XRP/ADA USD pairs returned prices and security identity;
+sector/country classifications for coins are inapplicable.
+
+REAL MIXED PORTFOLIO EXPOSURE — 2026-11-07
+-------------------------------------------
+Input sample portfolio (CAD base, total CAD 24,953.60):
+  XEQT.TO   32.06%       QQQ        22.65%
+  SCHD      16.99%       SPMO       11.32%
+  BTC-USD    8.49%       GLD         8.49%
+
+Identified underlying portfolio exposure: 67.87%.
+Unresolved underlying exposure: 32.13%; overwhelmingly XEQT's 32.06%
+portfolio weight, because Canadian ETF holdings could not be retrieved.
+Fund-level identified fractions: QQQ 99.927%; SCHD 99.766%; SPMO 99.878%;
+GLD 100%; XEQT.TO 0%. Direct Bitcoin is classified as crypto.
+
+Support contract in the actual exposure JSON:
+  XEQT.TO   price_only    Canadian ETF constituent lookup unavailable
+  QQQ       partial       stock holdings reported 2026-06-30 (130 days old)
+  SCHD      supported     stock holdings reported 2026-08-31
+  SPMO      supported     stock holdings reported 2026-08-31
+  BTC-USD   supported     direct cryptocurrency identity
+  GLD       partial       reported commodity disclosure 130 days old
+
+Lower-bound identified common-stock overlap (fund level; not portfolio
+weight and not necessarily aligned dates):
+  QQQ / SPMO  43.2951%
+  QQQ / SCHD   4.8244%
+  SCHD / SPMO  2.9161%
+These are minimum overlap estimates from identifiable common positions;
+unknown constituents and disclosure timing can change actual overlap.
+
+In this sample, 49.11% of the portfolio has no COMPANY SECTOR / domicile
+classification. This consists mainly of unresolved XEQT (~32.13%) plus
+identified gold and Bitcoin (~16.99%), for which company-sector/country
+labels are not applicable. Do not describe all such UNKNOWN classification
+as missing holdings.
+
+OFFICIAL V7 SUPPORT CONTRACT
+-----------------------------
+- U.S. and Canadian individual equities: historical price risk where
+  sufficient observations exist; direct sector/industry/company location
+  when Yahoo metadata is returned. Specific audit coverage: 110/110.
+- U.S.-LISTED EQUITY ETFs (not simply USD-denominated ETFs): holdings,
+  sector/country breakdowns and stock overlap ONLY when automatic fund
+  validation passes; otherwise partial/price-only/unverified with reason.
+- Canadian-listed ETFs: price-based metrics where data permit; NO automatic
+  full underlying constituent look-through in V7.
+- Physical bullion / selected spot crypto ETPs: price-based risk and
+  identifiable metal/coin exposure where the source supports it. No
+  company-sector classification for physical assets.
+- Direct crypto USD pairs: price risk and coin identity when supported by
+  the price adapter; no invented company industry or domicile.
+- Bond ETFs / individual fixed income, futures, swaps, leveraged/inverse
+  funds, covered-call option exposures and futures-based commodity pools:
+  detailed constituent, duration, credit, leverage and derivative exposure
+  OUT OF SCOPE. Price-based risk may still work where suitable prices exist.
+- Unknown or unsupported assets: warn with explicit reason. In ordinary
+  exposure mode, show unknown/partial weight and provenance; in strict
+  exposure mode reject incomplete, stale, unsafe or unverified results.
+
+ACCURACY, LICENSING, AND METHOD LIMITATIONS
+-------------------------------------------
+- TickerInside holdings are dated last-known snapshots, NOT time-machine
+  ETF composition. Do not inject current constituents into historic
+  portfolio backtests as if they were contemporaneously known.
+- The TickerInside ETF dataset uses CC BY 4.0 attribution; Yahoo/yfinance
+  price and stock data have separate personal-use/data-licensing limits.
+- Different issuer and SEC N-PORT dates can make overlap estimates stale.
+- A stock's reported company country is not its revenue distribution,
+  investment exposure geography, or currency sensitivity.
+- ETF sector/country values are FUND-LEVEL provider allocations; these do
+  not automatically provide each constituent's individual industry.
+- `--strict-exposure` is a policy for detailed exposure ONLY; separate
+  V1–V6 performance and risk workflows are not thereby disabled.
+- Per-asset `price_risk_status: not_checked_here` is deliberate in the
+  exposure command; price coverage is measured in separate audits.
+- Current `asset_support.instrument_kind` for ETFs may describe the
+  UNDERLYING HOLDINGS kind (e.g. "stock" for QQQ), not the listing type.
+  The portfolio asset is still an ETF; interpret that field carefully in
+  downstream UI until its name/meaning is standardized.
+- The remaining six parser errors and unverified issuer categories are
+  recorded limitations rather than silently treating them as valid equity.
+
+VERIFICATION COMMANDS
+---------------------
+  python -m pytest
+  python -m portfolio_risk etf-audit examples\us_etf_universe_v72.csv --output us_etf_v73_report.json
+  python -m portfolio_risk stock-audit examples\stock_universe_v72.csv --output stock_v72_report.json
+  python -m portfolio_risk coverage-audit examples\coverage_universe_30.csv --check-prices --check-metadata --output mixed_v72_report.json
+  python -m portfolio_risk exposure examples\sample_portfolio_v3.csv --base CAD --tickerinside --auto-stock-metadata --json
+  python -m portfolio_risk exposure examples\v73_supported_portfolio.csv --base USD --tickerinside --auto-stock-metadata --strict-exposure
+  python -m portfolio_risk exposure examples\v73_price_only_portfolio.csv --base CAD --tickerinside --auto-stock-metadata --strict-exposure
+
+CLOSEOUT AND NEXT VERSION
+-------------------------
+V7 is complete for the deliberately bounded exposure scope. It provides
+usable, source-dated stock/ETF exposure analysis when the free providers
+can justify it, labels incomplete coverage, and refuses unsupported
+constituents in strict mode. It does not promise full international ETF
+holdings, universal quote history, bond analytics or derivatives.
+
+V8 will address fundamental company valuation as a DISTINCT module.
+No V7 holdings or company classifications should be interpreted as
+forward earnings, fair value, or intrinsic value forecasts.
+
+Store this file as `PortfolioRiskEngine/docs/V7_OVERVIEW.txt` alongside
+V1–V6 overviews; preserve the previous originals and archive a V7 backup.

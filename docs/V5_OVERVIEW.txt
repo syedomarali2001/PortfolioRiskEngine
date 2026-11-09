@@ -1,0 +1,81 @@
+PORTFOLIO RISK ENGINE — V5 FINAL OVERVIEW
+========================================
+Status: Completed after the user's local test on 2026-11-07.
+Public release: deferred until V9.
+
+PURPOSE
+-------
+Extend V4's simulated portfolio strategies to explain portfolio volatility,
+estimate losses under historical/normal return models, test those risk estimates
+using prior-only rolling windows, and explore observed or hypothetical shocks.
+
+DELIVERED
+---------
+1. Covariance-based marginal and component volatility attribution, using final
+   V4 simulated weights and trailing asset returns. Shows portfolio and
+   standalone annualized volatility, absolute contributions and risk shares.
+2. Historical and Gaussian-normal one-common-close VaR and Expected Shortfall
+   at 95% and 99% confidence. Values are positive loss magnitudes, not maximum
+   losses or future guarantees.
+3. Rolling next-period VaR exception checks. Each forecast uses strictly older
+   observations; displays number of tests, observed vs expected breaches and
+   Kupiec unconditional-coverage p-values with sparse-event caution.
+4. Observed historical worst common-date and 20-period compounded losses,
+   plus optional instantaneous user-defined asset shocks (e.g. BTC-USD=-30).
+5. Reuse of V1–V4 data adapters, FX conventions, validated shared dates,
+   backtest NAV, fee parameters and existing CLI, with structured JSON output.
+6. Fixed V4 CLI strategy table formatting (headings display correctly).
+
+VERIFIED LOCAL TESTS
+--------------------
+189 automated tests passed (including V1–V4).
+User successfully ran all three V5 commands on 2026-11-07:
+  - Buy-and-hold risk analysis, 252-period lookback.
+  - Quarterly rebalancing with 10bps fees and 3% assumed risk-free rate.
+  - Quarterly strategy with a hypothetical BTC-USD=-30% asset shock.
+
+USER'S REPORTED EXAMPLE (2024-01 to 2026-11, QUARTERLY, CAD)
+------------------------------------------------------------
+Historical 95% VaR 1.58%; Expected Shortfall 2.09%.
+Historical 99% VaR 2.08%; Expected Shortfall 3.44%.
+Parametric-normal 95% VaR 1.57%; Expected Shortfall 1.98%.
+Annualized volatility at final strategy weights 15.13%; diversification ratio 1.354.
+Risk shares: XEQT 26.54%, QQQ 28.26%, SCHD 5.75%, SPMO 14.67%,
+BTC-USD 15.36%, GLD 9.43%.
+Rolling 95% historical VaR: 449 tests, 29 breaches vs ~22.5 expected.
+Rolling 95% parametric VaR: 449 tests, 20 breaches vs ~22.5 expected.
+Hypothetical BTC -30%, others unchanged: portfolio -2.42% (~CAD -484.66 on
+CAD 20,000 reference capital).
+Values refer to the sample allocation and historical simulation, not an
+individual's actual investment performance or prospective results.
+
+LIMITATIONS
+-----------
+The available sample omits earlier crises and pre-inception fund periods.
+Quarterly/monthly market calendars use shared observed closes; Bitcoin has
+additional weekend data. Price histories are FX-converted adjusted-return
+proxies; idealized close executions and fractional assets are not real trades.
+Asset risk attribution uses trailing covariance and ending weights, not the
+full fee-inclusive historical risk contribution path. Normal VaR/ES assumes
+normal returns; Kupiec coverage evaluates unconditional breach frequency, not
+breach independence. At 99% confidence, expected breaches are sparse and
+statistical inference is weak. No method guarantees the size of future losses.
+
+HANDOFF
+-------
+V6: risk-sensitive portfolio construction and simple systematic rules.
+We will use only past information to set dynamic weights, apply the existing
+fee-aware V4 simulation framework, compare against reference allocations on
+an identical evaluation period, and explicitly disclose hindsight selection.
+
+FILES
+-----
+src/portfolio_risk/risk.py
+src/portfolio_risk/risk_service.py
+src/portfolio_risk/cli.py
+src/portfolio_risk/backtest_service.py
+tests/test_risk.py
+tests/test_v5_cli.py
+
+Documentation policy: this is the one completed V5 overview. V6's final
+milestone overview will be produced only after successful local verification.

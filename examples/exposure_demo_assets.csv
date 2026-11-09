@@ -1,0 +1,7 @@
+symbol,asset_class,sector,country
+DEMOA,etf,,
+DEMOB,etf,,
+AAPL,equity,Technology,United States
+MSFT,equity,Technology,United States
+BTC-USD,crypto,,
+CASH,cash,,

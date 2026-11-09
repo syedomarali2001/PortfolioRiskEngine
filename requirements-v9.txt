@@ -1,0 +1,7 @@
+# V9.1: native live search (Streamlit 1.64+), no third-party search widget.
+# Does not replace the V8.4 Python package or its dependencies.
+streamlit>=1.64,<2
+plotly>=5.20
+
+# Continuous constrained optimization (V9.15)
+scipy>=1.11,<2

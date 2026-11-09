@@ -1,0 +1,147 @@
+PORTFOLIO RISK ENGINE — V6 COMPLETION OVERVIEW
+Version: V6 — Portfolio Construction & Systematic Allocation
+Completion evidence: user's Windows PowerShell runs on 2026-11-07
+Status: COMPLETE for the stated V6 scope, subject to documented methodological limits.
+
+PURPOSE
+-------
+V1–V5 established validated data ingestion, currency-aware accounting,
+performance analysis, historical backtesting and portfolio-risk modelling.
+V6 adds rules for setting and periodically recalculating portfolio target
+weights, and compares the consequences of those rules on the SAME eligible
+historical periods and assumptions.
+
+IMPLEMENTED STRATEGIES
+----------------------
+1. input_buy_hold: Invest at user-supplied initial proportions, then allow
+   weights to drift.
+2. input_rebalanced: Periodically restore the supplied proportions.
+3. equal_weight: Assign equal weights across the supplied assets.
+4. inverse_vol: Weight holdings inversely to trailing volatility.
+5. min_variance: Use a shrinkage-adjusted covariance estimate to solve a
+   constrained long-only minimum-variance allocation.
+6. momentum_top_k: Rotate equally into the top K assets ranked using a
+   specified historical momentum lookback and skip interval.
+
+IMPLEMENTATION AND ASSUMPTIONS
+------------------------------
+- Supports monthly or quarterly rebalancing as exercised in tests (calendar
+  transitions use the first shared close of the new period).
+- Allocation signals use only closes THROUGH THE PREVIOUS common date.
+- Supports configurable initial capital, fees in basis points, risk-free
+  assumption, minimum-history/lookback settings, maximum holding weight,
+  benchmark comparisons and a later-period analytical breakdown.
+- Uses CAD base currency in the recorded runs, including necessary FX
+  conversion; assets share a common valuation-date calendar.
+- Uses adjusted-close total-return proxies and fractional fills; not an
+  executable, tax-aware, spread-aware, real brokerage trading simulation.
+- Assets in the example portfolio were selected retrospectively. Rebalance
+  signal timing is controlled, but universe selection can still introduce
+  hindsight/survivorship bias.
+
+LOCAL TEST EVIDENCE
+-------------------
+Automated suite: 235 passed in 6.77 seconds.
+Three live data commands completed without reported exceptions:
+  A. 2023-01-01 input start; quarterly; 252-return lookback; zero fees;
+     CAD 20,000; 3% risk-free.
+  B. Same inputs plus fee-bps=10 and SPY benchmark.
+  C. 2023-01-01 input start; monthly; 126-return lookback;
+     momentum-skip=21; later-period breakdown from 2025-01-01;
+     default zero fees and zero risk-free assumption.
+
+RUN A — QUARTERLY, NO FEES (2024-02-13 THROUGH 2026-11-06)
+----------------------------------------------------------
+Common dates: 673 observations; 672 return periods.
+Strategy                 End CAD       CAGR      Vol       Sharpe   Max DD
+input_buy_hold           33,633.44     20.98%    16.14%    1.106   -16.78%
+input_rebalanced         35,060.42     22.83%    15.74%    1.228   -16.39%
+equal_weight             36,816.08     25.05%    17.44%    1.230   -16.00%
+inverse_vol              35,967.71     23.99%    14.75%    1.366   -14.13%
+min_variance             37,579.33     25.99%    12.50%    1.719   -11.56%
+momentum_top_k           40,997.09     30.08%    27.50%    1.008   -20.54%
+
+RUN B — QUARTERLY, 10 BPS FEES, SPY BENCHMARK
+------------------------------------------------
+Same shared dates, CAD 20,000 and risk-free=3%.
+Strategy                 End CAD       CAGR      Vol       Sharpe   Max DD   Fees CAD
+input_buy_hold           33,599.84     20.93%    16.13%    1.103   -16.78%     19.98
+input_rebalanced         35,004.28     22.76%    15.74%    1.225   -16.40%     37.54
+equal_weight             36,746.98     24.96%    17.44%    1.226   -16.01%     47.34
+inverse_vol              35,901.27     23.90%    14.74%    1.362   -14.14%     45.46
+min_variance             37,473.56     25.86%    12.50%    1.711   -11.57%     72.75
+momentum_top_k           40,603.99     29.62%    27.48%    0.996   -20.62%    331.33
+
+Fee-free, buy-and-hold SPY benchmark (CAD-adjusted, same period):
+  CAGR 18.82%; volatility 16.81%; max drawdown -19.41%.
+These are retrospective strategy simulations, not demonstrated independent
+future performance. The momentum strategy's high turnover produces much
+larger costs than the other rules even with the same 10-bps fee rate.
+
+RUN C — MONTHLY, 126-RETURN LOOKBACK, NO FEES
+--------------------------------------------
+Full simulation: 2023-03-10 through 2026-11-06;
+799 observations / 798 returns; default risk-free=0%.
+Strategy                 End CAD       CAGR      Vol       Sharpe   Max DD
+input_buy_hold           39,064.04     22.94%    16.40%    1.372   -17.73%
+input_rebalanced         40,330.86     24.16%    15.00%    1.552   -16.44%
+equal_weight             43,978.01     27.52%    16.59%    1.583   -16.08%
+inverse_vol              41,345.46     25.11%    13.82%    1.729   -14.14%
+min_variance             41,816.00     25.55%    11.22%    2.132   -10.86%
+momentum_top_k           35,665.20     19.54%    25.31%    0.848   -31.56%
+
+Later-period subset FROM 2025-01-01 (NOT independent or untouched):
+Strategy                 CAGR        Sharpe      Max DD
+input_buy_hold           12.10%      0.739      -17.73%
+input_rebalanced         15.49%      0.967      -16.44%
+equal_weight             14.07%      0.844      -16.08%
+inverse_vol              18.22%      1.180      -14.14%
+min_variance             25.11%      1.872      -10.86%
+momentum_top_k           -5.30%     -0.117      -31.56%
+
+Note: Run C changes the start of the usable window, frequency, lookback,
+risk-free assumption and evaluation period. Its Sharpe/CAGR values should
+NOT be directly attributed to a single changed parameter when compared
+with Runs A or B. Its later-period summary is retrospective, not a sealed
+out-of-sample holdout.
+
+FINDINGS AND WHAT THEY DO NOT PROVE
+-----------------------------------
+- Minimum variance had the strongest risk-adjusted results in the reported
+  example windows, with lower volatility and shallower drawdowns than the
+  other tested strategies.
+- Momentum's highest CAGR in the first window came with markedly higher
+  volatility, deeper drawdowns and far greater transaction costs; in the
+  different monthly/later-window analysis its performance deteriorated.
+- These differences illustrate the returns-versus-risk tradeoff. They do
+  not establish that a rule will outperform in live investments.
+- The simulated strategies use a retrospectively chosen asset universe,
+  simplified closes and historical samples with limited market regimes.
+- Realism is bounded by missing spreads, slippage, taxes, corporate action
+  intricacies, brokerage constraints and potential data-provider issues.
+
+END-OF-V6 ACCEPTANCE
+--------------------
+[PASS] Core V1–V5 functionality remains covered by the test suite.
+[PASS] Six construction methods and rebalancing run through the CLI.
+[PASS] Past-only signal construction and explicit windowing tested.
+[PASS] Capital, portfolio value, turnover-fee treatment and benchmark output.
+[PASS] Three local commands completed with real retrieved data.
+[PASS] 235 automated tests passed.
+[NOTE] No externally verified live trading or genuine untouched historical
+       performance claim is made.
+
+NEXT VERSION
+------------
+V7: Exposure intelligence — issuer/ETF constituent overlap, sector and
+geographic exposure, where reliable source data and disclosure dates allow.
+Keep provenance, as-of dates and completeness flags; do not fabricate full
+look-through coverage where source holdings are missing.
+
+ARCHIVING INSTRUCTIONS
+----------------------
+Place V6_OVERVIEW.txt in the existing PortfolioRiskEngine/docs/ folder,
+alongside V1_OVERVIEW.txt through V5_OVERVIEW.txt and ROADMAP.md. Save a
+separate V6 project backup after checking the updated project contents.
+.env and temporary/cache directories are not needed in the backup; do not
+remove working caches or environments from the active project.

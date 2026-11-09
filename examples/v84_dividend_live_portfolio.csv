@@ -1,0 +1,4 @@
+symbol,market_value,currency,quote_currency
+SCHD,10000,USD,USD
+AAPL,10000,USD,USD
+SPY,5000,USD,USD

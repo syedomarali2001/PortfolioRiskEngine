@@ -1,0 +1,18 @@
+{
+  "symbol": "DEMO",
+  "source": "SYNTHETIC TEACHING DATA — NOT A LISTED COMPANY",
+  "period_end": "2025-12-31",
+  "statement_currency": "USD",
+  "quote_currency": "USD",
+  "revenue": 2000000000,
+  "net_income": 210000000,
+  "ebitda": 350000000,
+  "operating_cash_flow": 310000000,
+  "capital_expenditures": -60000000,
+  "free_cash_flow": 250000000,
+  "cash": 500000000,
+  "total_debt": 800000000,
+  "shares_outstanding": 100000000,
+  "price": 35.0,
+  "market_cap": 3500000000
+}

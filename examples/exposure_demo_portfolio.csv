@@ -1,0 +1,5 @@
+symbol,market_value,currency,quote_currency
+DEMOA,6000,CAD,CAD
+DEMOB,3000,CAD,CAD
+AAPL,1000,CAD,USD
+BTC-USD,1000,CAD,USD

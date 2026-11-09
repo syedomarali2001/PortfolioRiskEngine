@@ -1,0 +1,83 @@
+Portfolio Risk Engine — V4 Final Overview
+========================================
+Milestone: V4 Historical Portfolio Backtesting
+Status: COMPLETE — local validation reported November 7, 2026
+
+1. PURPOSE
+V4 turns V3's descriptive constant-mix return analysis into an explicit
+historical simulation of investments, allocation drift, rebalancing, and
+trading fees. It is a research/backtesting framework, not a reconstruction
+of real brokerage account performance.
+
+2. IMPLEMENTED FEATURES
+- Shared historical price and FX inputs inherited from V1–V3.
+- Five simulated strategies with the same initial allocations and capital:
+  buy-and-hold, monthly, quarterly, semiannual (June/December), and annual.
+- End-of-period rebalancing at the final available common closing date.
+- Optional proportional fee in basis points of traded notional; 0 bps default.
+- Initial purchases also incur proportional fees when a nonzero fee is set.
+- Results include ending value, CAGR, volatility, Sharpe, maximum drawdown,
+  fee totals, number of rebalances, and buy-and-hold terminal weight drift.
+- Optional SPY benchmark comparison in a common CAD base currency.
+
+3. VERIFIED LOCAL EXECUTION
+- Automated test suite: 152 tests passed (per user's local terminal output).
+- Live historical backtest ran for 702 common closing-price observations,
+  January 2, 2024 to November 6, 2026 (701 return intervals).
+- Historical backtest with SPY benchmark completed.
+- Backtest with fees set to 10 bps completed, with nonzero fee totals and
+  lower ending wealth values compared with zero-fee runs.
+
+4. SAMPLE RESULTS — ZERO FEES, 3% ANNUAL RISK-FREE RATE
+Starting capital: CAD 20,000
+Strategy       Ending value (CAD)   CAGR     Volatility   Sharpe   Max DD     Rebalances
+Buy and hold       35,443.87       22.28%     16.25%     1.166   -17.10%       0
+Monthly            36,719.43       23.81%     15.52%     1.295   -16.38%      34
+Quarterly          37,208.09       24.39%     15.58%     1.321   -16.38%      11
+Semiannual         36,773.72       23.88%     15.50%     1.300   -16.31%       5
+Annual             36,449.08       23.49%     15.61%     1.271   -16.31%       2
+
+SPY benchmark (fee-free buy and hold): 20.52% CAGR, 16.63% volatility,
+-19.41% maximum drawdown.
+
+5. SAMPLE RESULTS — 10 BPS FEE, 0% RISK-FREE RATE
+IMPORTANT: The user's fee-test command omitted --risk-free 3; its Sharpe
+ratios therefore cannot be directly compared with the 3%-rate run above.
+Strategy       Ending value (CAD)  Cumulative fees (CAD)
+Buy and hold       35,408.46              19.98
+Monthly            36,644.36              52.11
+Quarterly          37,146.16              40.61
+Semiannual         36,723.68              31.11
+Annual             36,404.51              26.69
+
+To compare fees fairly with the prior run:
+  python -m portfolio_risk backtest examples\sample_portfolio_v3.csv --base CAD --start 2024-01-01 --capital 20000 --risk-free 3 --fee-bps 10
+
+6. DATA AND METHODOLOGICAL LIMITATIONS
+- This simulation applies TODAY'S supplied portfolio target weights to
+  earlier dates; it is not the user's actual historical account performance.
+- Adjusted-close prices approximate total returns, and are not necessarily
+  executable transaction prices.
+- Rebalances execute at idealized closing prices; no bid/ask spread, market
+  impact, taxes, or deposits/withdrawals are modelled.
+- Fractional asset units are allowed.
+- Only common market closing dates are used; Bitcoin's non-overlapping
+  weekend sessions are discarded in aligned series.
+- Reported annualized performance does not guarantee future outcomes.
+- The CLI table heading currently prints literal formatting placeholders;
+  this is a presentation bug, not evidence of an accounting failure.
+
+7. V4 EXIT CRITERIA
+[PASS] All 152 automated tests passed locally.
+[PASS] Backtest runs across all five strategy policies.
+[PASS] SPY benchmark mode runs.
+[PASS] Configurable fees reduce ending wealth and are reported.
+[PASS] Rebalance counts and terminal weights are reported.
+[OPTIONAL POLISH] Fix malformed CLI table heading.
+[OPTIONAL CHECK] Rerun fee scenario using identical 3% risk-free rate.
+
+8. V5 HANDOFF
+Next milestone: Advanced Risk Modelling, including covariance-based risk
+contributions, historical and parametric Value at Risk, Expected Shortfall,
+stress tests, and risk-model validation. Maintain independent modules and
+unit tests; defer the dashboard to V9.

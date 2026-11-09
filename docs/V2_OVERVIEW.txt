@@ -1,0 +1,41 @@
+PORTFOLIO RISK ENGINE — V2 OVERVIEW (RECONSTRUCTED)
+===================================================
+Status: V2 completed before V3. This is a RETROSPECTIVE summary assembled from
+V2's source code, test suite, and the project's conversation. The original
+V2_OVERVIEW.txt was not available in the source artifacts. If you have the
+original finalized V2 overview in your local docs folder, KEEP YOUR ORIGINAL.
+
+GOAL
+----
+Extend the V1 validated holdings and market-data architecture with consistent
+CAD/USD portfolio accounting. Preserve separations between user-entered
+market-value currency and a security's actual trading quote currency.
+
+IMPLEMENTED
+-----------
+1. Normalize user-entered market values into CAD or USD, with manual or
+   retrieved USD/CAD conversion.
+2. Calculate total value in the selected base currency and the percentage
+   weight of each holding. Calculate concentration indicators including largest
+   holding, top-three weights, HHI, and effective number of holdings.
+3. Provide a reusable portfolio accounting function independent of the CLI.
+4. Apply FX quotes with explicit date/freshness requirements and permit a fixed
+   manual conversion rate for offline mathematical verification.
+5. Add time-aligned historical FX conversion using rates observed on/before
+   each security-price date, with a configurable maximum FX quote age.
+6. Expose `python -m portfolio_risk analyze <file> --base CAD` and machine-
+   readable JSON output. These outputs are not historical account P&L.
+7. Add automated accounting, FX quote, historical FX, and CLI tests.
+
+TEST EVIDENCE FROM DEVELOPMENT
+------------------------------
+V2's completed offline suite included 74 passing tests (39 inherited from V1).
+The illustrative six-position sample with manually fixed USD/CAD=1.35 produced
+CAD 24,200 total value and normalized weights summing to one. The figure is a
+software-test example, not a live market valuation.
+
+LIMITATIONS AND HANDOFF
+-----------------------
+V2 has no realized/hypothetical investment-return model, strategy simulator,
+VaR, or stress analysis. V3 subsequently adds base-currency performance analysis
+and common-trading-date alignment; V4 strategy simulation builds on that.
