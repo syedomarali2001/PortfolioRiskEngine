@@ -24,6 +24,7 @@ from .core import (MAX_HOLDINGS, PortfolioError, SUPPORTED_CURRENCIES,
                    normalized_symbol, pct, safe_portfolio_nominal_total, update_holding_amount,
                    show_complete_dividend_yield)
 from .search import lookup
+from .ticker_validation import verify_ticker
 from .example_portfolios import EXAMPLES, get_example, load_example
 from .quotes import verified_currency
 from .fx_display import display_portfolio_value, get_fx_quote
@@ -68,6 +69,21 @@ def _history_dates() -> tuple[dt.date, dt.date]:
 @st.cache_data(ttl=3600, show_spinner=False)
 def _cached_quote_currency(symbol: str):
     return verified_currency(symbol)
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def _cached_ticker_check(symbol: str):
+    return verify_ticker(symbol)
+
+
+def _verify_portfolio_tickers():
+    # CSV imports and saved/sample allocations must also fail gracefully.
+    for holding in st.session_state.holdings:
+        symbol = holding['symbol']
+        evidence = _cached_ticker_check(symbol)
+        if not evidence.ok:
+            raise PortfolioError(f'{symbol}: {evidence.message} '
+                                 'Remove or correct this investment in Portfolio Builder.')
 
 
 @st.cache_data(ttl=600, show_spinner=False)
@@ -156,6 +172,7 @@ def _current_report(name: str) -> dict | None:
 def _run(command: str, args: list[str], *, key: str | None = None):
     name = key or command
     try:
+        _verify_portfolio_tickers()
         if command in {"insights", "dividends"}:
             # Best-effort Auto lookup; missing provider metadata is NOT a
             # reason to invent currency. V8.4 still validates explicit data.
@@ -179,6 +196,13 @@ def _run(command: str, args: list[str], *, key: str | None = None):
                      "The amount currency can be different.")
             with st.expander("Technical details"):
                 st.code(message)
+        elif any(mark in message.lower() for mark in (
+                'possibly delisted', 'quote not found for symbol',
+                'no daily close prices', 'unable to retrieve')):
+            st.error('Market data could not be loaded for one of your investments. '
+                     'Check its ticker in Portfolio Builder and try again.')
+            with st.expander('Technical details'):
+                st.code(message[-1200:])
         else:
             st.error(message)
         return False
@@ -257,6 +281,9 @@ def _add_ticker(symbol: str, name: str, amount: float, weight: float,
         raise PortfolioError(f"Maximum {MAX_HOLDINGS} holdings reached")
     if amount <= 0 or weight <= 0:
         raise PortfolioError("Enter a positive holding value and target weight")
+    evidence = _cached_ticker_check(symbol)
+    if not evidence.ok:
+        raise PortfolioError(f'{symbol} was not added. {evidence.message}')
     candidate = {"symbol": symbol, "name": name,
                  "market_value": float(amount), "weight": float(weight), "currency": currency}
     if quote_currency in ("", "Auto", None):
@@ -341,6 +368,7 @@ def page_builder():
     with st.expander("Can't find the investment? Enter its exact ticker"):
         manual = st.text_input("Exact ticker symbol", placeholder="e.g. XEQT.TO",
                                key=f"manual_ticker_{st.session_state.ticker_version}")
+        st.caption('Exact symbols are checked against recent market prices before being added.')
 
     if not selected and not manual.strip():
         st.caption("Select a matching investment above to enter its value or allocation.")
